@@ -1,1 +1,1 @@
-# ai-content-detector-v1.1
+ai_content_detected
