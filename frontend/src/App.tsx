@@ -1,4 +1,5 @@
 import { Suspense, lazy } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
@@ -31,6 +32,7 @@ function App() {
         <SubscriptionProvider>
           <AnalysisProvider>
             <Layout>
+            <ErrorBoundary>
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
               {/* Public routes */}
@@ -74,6 +76,7 @@ function App() {
               />
             </Routes>
           </Suspense>
+            </ErrorBoundary>
             </Layout>
             <Toaster />
           </AnalysisProvider>
