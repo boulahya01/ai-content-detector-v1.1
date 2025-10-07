@@ -4,9 +4,9 @@
 Repository root: /ai-content-detector-v1.1
 --------------------------------------------------
 Notes------
-1 - its note nessassary the user login to use my services
-2 - user should see the input field in the landing page 
-3 - the login is nessassary to see the other private user services 
+1 - All services in this project are public and available to anonymous users by default.
+2 - The landing page shows an input field so anyone can analyze content without logging in.
+3 - Login is optional and only required for account features like saving history or purchasing subscriptions.
 
 
 Frontend (React + TypeScript) — /frontend
