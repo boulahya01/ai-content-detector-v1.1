@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api import analyze
 
 app = FastAPI(title="AI Content Detector API")
+
+# Include routers
+app.include_router(analyze.router, prefix="/api")
 
 # Configure CORS
 app.add_middleware(
