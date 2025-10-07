@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAnalyzer } from '@/hooks/useAnalyzer';
 import { toast } from 'react-hot-toast';
 import AnalysisForm from '@/components/features/analysis/AnalysisForm';
@@ -7,7 +8,11 @@ import AnalysisResults from '@/components/features/analysis/AnalysisResults';
 import { AnalysisResult } from '@/types/api';
 
 export default function AnalyzePage() {
+  const location = useLocation();
+  // Safely extract incoming text from location state if present
+  const incomingText = ((location.state as { text?: string } | null)?.text) ?? '';
   const [result, setResult] = React.useState<AnalysisResult | null>(null);
+  const [initialText] = React.useState(incomingText);
   const { isLoading, error } = useAnalyzer({
     onSuccess: (data) => {
       setResult(data);
@@ -19,19 +24,17 @@ export default function AnalyzePage() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="content-container py-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
           Analyze Content
         </h1>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Enter Text to Analyze
-          </h2>
+          {/* File upload component */}
           <FileUpload />
           <div className="mt-4">
-            <AnalysisForm onAnalysisComplete={setResult} />
+            <AnalysisForm onAnalysisComplete={setResult} initialText={initialText} />
           </div>
         </div>
 
