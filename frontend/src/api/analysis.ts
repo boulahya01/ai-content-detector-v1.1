@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import { ApiResponse, AnalysisResult } from '@/types/api';
+import type { AxiosProgressEvent } from 'axios';
 
 export interface AnalyzeTextRequest {
   content: string;
@@ -31,27 +32,49 @@ export const analysisService = {
     try {
       const response = await api.post<ApiResponse<AnalysisResult>>('/analyze', data);
       return response.data;
-    } catch (error) {
+    } catch {
       throw new Error('Failed to analyze text content');
     }
   },
 
-  async analyzeFile(data: AnalyzeFileRequest): Promise<ApiResponse<AnalysisResult>> {
+  async analyzeFile(
+    file: File,
+    options?: AnalyzeFileRequest['options'],
+    onUploadProgress?: (percent: number) => void
+  ): Promise<ApiResponse<AnalysisResult>> {
     try {
       const formData = new FormData();
-      formData.append('file', data.file);
-      if (data.options) {
-        formData.append('options', JSON.stringify(data.options));
+      formData.append('file', file);
+      if (options) {
+        formData.append('options', JSON.stringify(options));
       }
-      
-      const response = await api.post<ApiResponse<AnalysisResult>>('/upload', formData, {
+
+      const response = await api.post<ApiResponse<AnalysisResult>>('/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+          if (!onUploadProgress) return;
+          const loaded = progressEvent.loaded ?? 0;
+          const total = progressEvent.total ?? 0;
+          if (total > 0) {
+            const percent = Math.round((loaded * 100) / total);
+            onUploadProgress(percent);
+          }
+        },
       });
-      return response.data;
-    } catch (error) {
-      throw new Error('Failed to analyze file content');
+      return response.data as ApiResponse<AnalysisResult>;
+    } catch (error: any) {
+      console.error('File analysis error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to analyze file content'
+      );
     }
   },
 
@@ -61,7 +84,7 @@ export const analysisService = {
         params: { page, limit },
       });
       return response.data;
-    } catch (error) {
+    } catch {
       throw new Error('Failed to fetch analysis history');
     }
   },
@@ -70,7 +93,7 @@ export const analysisService = {
     try {
       const response = await api.get<ApiResponse<AnalysisResult>>(`/analyze/${id}`);
       return response.data;
-    } catch (error) {
+    } catch {
       throw new Error('Failed to fetch analysis details');
     }
   },
@@ -78,7 +101,7 @@ export const analysisService = {
   async deleteHistoryItem(id: string): Promise<void> {
     try {
       await api.delete(`/history/${id}`);
-    } catch (error) {
+    } catch {
       throw new Error('Failed to delete history item');
     }
   },
@@ -86,7 +109,7 @@ export const analysisService = {
   async clearHistory(): Promise<void> {
     try {
       await api.delete('/history');
-    } catch (error) {
+    } catch {
       throw new Error('Failed to clear history');
     }
   }
