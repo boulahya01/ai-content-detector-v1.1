@@ -15,8 +15,9 @@ export default function LoginPage() {
   // Placeholder: Google OAuth integration goes here
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen bg-gray-50">
+      <div className="content-container section">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
           Welcome to AI Content Detector
         </h2>
@@ -25,8 +26,8 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div className="mt-8">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -43,6 +44,7 @@ export default function LoginPage() {
               <GoogleButton onClick={() => { console.log('Google sign-in (placeholder)'); }} />
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

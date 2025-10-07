@@ -12,7 +12,7 @@ export default function DashboardPage() {
   const recentAnalyses = history?.slice(0, 5) || [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="content-container py-8">
       <div className="grid gap-6 md:grid-cols-2">
         {/* Welcome Section */}
         <div className="col-span-2">
