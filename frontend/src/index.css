@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+	--content-max-width: 72rem;
+}
+
+@layer base {
+	html, body, #root {
+		height: 100%;
+	}
+
+	body {
+		@apply bg-white text-gray-800 antialiased;
+	}
+
+	h1, h2, h3 {
+			@apply text-gray-900;
+	}
+
+		h1 {
+			@apply text-display-md sm:text-display-lg font-extrabold;
+		}
+
+		p {
+			@apply text-base leading-7 text-gray-700;
+		}
+
+
+		/* Layout helpers */
+		@layer components {
+			.content-container {
+				max-width: var(--content-max-width);
+				margin-left: auto;
+				margin-right: auto;
+				padding-left: 1.5rem;
+				padding-right: 1.5rem;
+			}
+
+			.section {
+				padding-top: 3.5rem;
+				padding-bottom: 3.5rem;
+			}
+		}
+	/* Accessible focus for interactive elements */
+	:focus {
+		outline: none;
+		box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+	}
+}
