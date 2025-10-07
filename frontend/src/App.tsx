@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
 import { SubscriptionProvider } from './context/SubscriptionContext';
@@ -26,63 +26,42 @@ const LoadingSpinner = () => (
 );
 
 function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <SubscriptionProvider>
-          <AnalysisProvider>
-            <Layout>
-            <ErrorBoundary>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/billing" element={<BillingPage />} />
+  const router = createBrowserRouter(
+    [
+      {
+        path: '/',
+        element: (
+          <AuthProvider>
+            <SubscriptionProvider>
+              <AnalysisProvider>
+                <Layout />
+              </AnalysisProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
+        ),
+        children: [
+          { index: true, element: <HomePage /> },
+          { path: 'login', element: <LoginPage /> },
+          { path: 'pricing', element: <PricingPage /> },
+          { path: 'billing', element: <BillingPage /> },
+          { path: 'dashboard', element: <PrivateRoute><DashboardPage /></PrivateRoute> },
+          { path: 'analyze', element: <AnalyzePage /> },
+          { path: 'history', element: <PrivateRoute><HistoryPage /></PrivateRoute> },
+          { path: 'settings', element: <PrivateRoute><SettingsPage /></PrivateRoute> },
+        ],
+      },
+    ],
+    // Opt-in to v7 future flags to silence upgrade warnings. cast to any to avoid TS type mismatches
+    ({ future: { v7_startTransition: true, v7_relativeSplatPath: true } } as any)
+  );
 
-              {/* Protected routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute>
-                    <DashboardPage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/analyze"
-                element={
-                  <PrivateRoute>
-                    <AnalyzePage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/history"
-                element={
-                  <PrivateRoute>
-                    <HistoryPage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <PrivateRoute>
-                    <SettingsPage />
-                  </PrivateRoute>
-                }
-              />
-            </Routes>
-          </Suspense>
-            </ErrorBoundary>
-            </Layout>
-            <Toaster />
-          </AnalysisProvider>
-        </SubscriptionProvider>
-      </AuthProvider>
-    </Router>
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <RouterProvider router={router} />
+      </Suspense>
+      <Toaster />
+    </ErrorBoundary>
   );
 }
 

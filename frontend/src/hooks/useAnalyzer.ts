@@ -23,6 +23,7 @@ export const useAnalyzer = (options: UseAnalyzerOptions = {}) => {
     try {
       const result = await analyzeText(text);
       onSuccess?.(result);
+      return result;
     } catch (err) {
       const error = err as Error;
       setError(error);
