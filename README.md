@@ -1,125 +1,211 @@
-🎯 AI Content Detector — Project Structure (clean, accurate)
-============================================================
+# 🎯 AI Content Detector
 
-Repository root: /ai-content-detector-v1.1
---------------------------------------------------
-Notes------
-1 - All services in this project are public and available to anonymous users by default.
-2 - The landing page shows an input field so anyone can analyze content without logging in.
-3 - Login is optional and only required for account features like saving history or purchasing subscriptions.
+An advanced web application that helps you detect AI-generated content with high accuracy and real-time analysis.
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-Frontend (React + TypeScript) — /frontend
---------------------------------------------------
-📁 frontend/
-    ├─ 📄 index.html                     # Vite HTML entry
-    ├─ 📄 package.json                   # scripts: dev, build, preview, typecheck
-    ├─ 📄 vite.config.ts                 # Vite config + alias (@ -> ./src)
-    ├─ 📄 tailwind.config.js             # Tailwind content paths
-    ├─ 📄 postcss.config.js              # PostCSS + autoprefixer
-    ├─ 📄 tsconfig.json                  # TypeScript base config
-    ├─ 📄 tsconfig.app.json              # App TS config used by `npm run typecheck`
-    ├─ 📄 tsconfig.node.json             # Vite/node TS config
-    └─ 📁 src/
-            ├─ 📄 main.tsx                   # src/main.tsx — app bootstrap (React.StrictMode)
-            ├─ 📄 App.tsx                    # src/App.tsx — providers, Router, Layout, Routes
-            ├─ 📄 index.css                  # Tailwind entry
-            ├─ 📄 vite-env.d.ts              # Vite type declarations
-            +
-            ├─ 📁 api/
-            │   ├─ 📄 analysis.ts            # src/api/analysis.ts - analysisService
-            │   ├─ 📄 auth.ts                # src/api/auth.ts - auth client helpers
-            │   └─ 📄 subscription.ts        # src/api/subscription.ts - subscription client
-            +
-            ├─ 📁 components/
-            │   ├─ 📄 Layout.tsx             # src/components/Layout.tsx - navigation + footer
-            │   ├─ 📄 PrivateRoute.tsx       # src/components/PrivateRoute.tsx - auth guard
-            │   ├─ 📁 features/
-            │   │   └─ 📁 analysis/
-            │   │       ├─ 📄 AnalysisForm.tsx
-            │   │       ├─ 📄 AnalysisResults.tsx
-            │   │       └─ 📄 ConfidenceIndicator.tsx
-            │   └─ 📁 ui/
-            │       ├─ 📄 Button.tsx         # src/components/ui/Button.tsx (uses @radix-ui/react-slot)
-            │       ├─ 📄 Card.tsx
-            │       ├─ 📄 Input.tsx
-            │       ├─ 📄 Textarea.tsx
-            │       └─ 📄 Loading.tsx
-            +
-            ├─ 📁 context/
-            │   ├─ 📄 AuthContext.tsx        # src/context/AuthContext.tsx
-            │   ├─ 📄 SubscriptionContext.tsx# src/context/SubscriptionContext.tsx
-            │   └─ 📄 AnalysisContext.tsx    # src/context/AnalysisContext.tsx
-            +
-            ├─ 📁 hooks/
-            │   ├─ 📄 useAuth.ts              # src/hooks/useAuth.ts
-            │   ├─ 📄 useSubscription.ts      # src/hooks/useSubscription.ts
-            │   └─ 📄 useAnalyzer.ts          # src/hooks/useAnalyzer.ts
-            +
-            ├─ 📁 lib/
-            │   └─ 📄 api.ts                  # src/lib/api.ts - axios instance + interceptors
-            +
-            ├─ 📁 pages/
-            │   ├─ 📄 HomePage.tsx            # src/pages/HomePage.tsx
-            │   ├─ 📄 LoginPage.tsx           # src/pages/LoginPage.tsx
-            │   ├─ 📄 DashboardPage.tsx       # src/pages/DashboardPage.tsx
-            │   ├─ 📄 AnalyzePage.tsx         # src/pages/AnalyzePage.tsx
-            │   ├─ 📄 HistoryPage.tsx
-            │   ├─ 📄 PricingPage.tsx
-            │   └─ 📄 SettingsPage.tsx
-            +
-            ├─ 📁 types/
-            │   ├─ 📄 api.ts                 # src/types/api.ts
-            │   ├─ 📄 context.ts             # src/types/context.ts
-            │   └─ 📄 index.ts               # src/types/index.ts
-            +
-            └─ 📁 utils/
-                    ├─ 📄 api.ts                 # src/utils/api.ts (error helpers)
-                    └─ 📄 cn.ts                  # src/utils/cn.ts (clsx + twMerge)
+## 📋 Overview
 
-Backend (FastAPI) — /backend
---------------------------------------------------
-📁 backend/
-    ├─ 📁 app/
-    │   ├─ 📁 api/                      # expected: routes and endpoints (may be empty/partial)
-    │   ├─ 📁 models/                   # expected: DB models
-    │   ├─ 📁 utils/                    # expected: helpers
-    │   └─ 📄 main.py                   # backend/app/main.py — FastAPI app entry (CORS configured)
-    └─ 📄 requirements.txt              # backend/requirements.txt
+The AI Content Detector is a powerful web application that helps users identify AI-generated content. Key points:
 
-Top-level files
---------------------------------------------------
-    • .env                               # (not committed) environment variables
-    • .gitignore
-    • README.md
-    • project-structure.txt              # (this file)
+1. **Public Access**: All core services are available to anonymous users
+2. **Instant Analysis**: Direct content analysis from the landing page
+3. **Optional Login**: Required only for premium features (history, subscriptions)
 
-Quick notes (observations & recent fixes)
---------------------------------------------------
-• Runtime bug: React crashed at render due to Radix `Slot` expecting a single child.
-    - Root cause: `Button` used with `asChild` while the wrapped `Link` included text + <span>, creating multiple child nodes.
-    - Fix applied: `frontend/src/pages/HomePage.tsx` — replaced `Button asChild` + `Link` pattern with `Link` wrapping `Button`.
+## 🌟 Features
 
-• Providers: `src/App.tsx` composes providers in this order:
-    AuthProvider → SubscriptionProvider → AnalysisProvider → Layout → Routes
+- Real-time AI content detection
+- Support for multiple file formats (.txt, .docx)
+- Interactive confidence scoring
+- User authentication and authorization
+- Usage tracking and subscription management
+- Responsive and modern UI with TailwindCSS
+- RESTful API with FastAPI
+- Comprehensive error handling
 
-How to run (frontend)
---------------------------------------------------
-1) cd frontend
-2) npm install
-3) npm run dev
+## 🛠️ Tech Stack
 
-How to run backend (dev)
---------------------------------------------------
-1) cd backend
-2) python -m venv .venv && source .venv/bin/activate
-3) pip install -r requirements.txt
-4) uvicorn app.main:app --reload --port 8000
+### Frontend
+- **React**: UI library
+- **TypeScript**: Type-safe development
+- **TailwindCSS**: Utility-first CSS
+- **Vite**: Build tool and dev server
 
-Recommended next steps
---------------------------------------------------
-1. Add a React Error Boundary to `src/App.tsx` to avoid full white screens for render-time exceptions.
-2. Optionally run `npm run typecheck` (in `frontend`) to surface TypeScript errors: `cd frontend && npm run typecheck`.
-3. Start the dev server and open browser console; if you want I can run it and report back.
+### Backend
+- **FastAPI**: High-performance API framework
+- **Python**: Core programming language
+- **SQLAlchemy**: Database ORM
+- **JWT**: Authentication
 
-If you want the file adjusted (different icons, more/less verbosity, or markdown-style), tell me which style you prefer and I'll update it.
+## 📦 Project Structure
+
+### Root Directory
+```
+📂 ai-content-detector/
+ ├── 📄 .gitignore              # Git ignore rules
+ ├── 📄 README.md               # Project documentation
+ ├── 📄 .env.example            # Environment variables template
+ ├── 📄 docker-compose.yml      # Docker services configuration
+ ├── 📂 backend/                # Backend application
+ └── 📂 frontend/               # Frontend application
+```
+
+### Backend (`/backend`)
+```
+📂 backend/
+ ├── 📂 app/
+ │   ├── 📄 main.py              # FastAPI application entry point
+ │   ├── 📂 api/                 # API endpoints and route handlers
+ │   │   ├── 📄 analyze.py       # Content analysis endpoints
+ │   │   ├── 📄 auth.py          # Authentication routes
+ │   │   └── 📄 subscription.py   # Subscription management
+ │   ├── 📂 models/              # Database models and schemas
+ │   │   ├── 📄 user.py          # User model
+ │   │   ├── 📄 analysis.py      # Analysis results model
+ │   │   └── 📄 subscription.py   # Subscription model
+ │   └── 📂 utils/               # Utility functions and helpers
+ │       ├── 📄 auth.py          # Authentication utilities
+ │       └── 📄 analysis.py      # Analysis helpers
+ ├── 📂 tests/                   # Test suite
+ │   ├── 📄 test_api.py          # API endpoint tests
+ │   └── 📄 test_models.py       # Model unit tests
+ └── 📄 requirements.txt         # Python dependencies
+```
+
+### Frontend (`/frontend`)
+```
+📂 frontend/
+ ├── 📄 index.html              # Entry HTML file
+ ├── 📄 package.json            # NPM dependencies and scripts
+ ├── 📄 vite.config.ts          # Vite configuration
+ ├── 📄 tsconfig.json           # TypeScript configuration
+ ├── 📂 src/
+ │   ├── 📄 main.tsx            # Application entry point
+ │   ├── 📄 App.tsx             # Root component
+ │   ├── 📂 api/                # API integration
+ │   │   ├── 📄 analysis.ts     # Analysis service
+ │   │   ├── 📄 auth.ts         # Auth service
+ │   │   └── 📄 subscription.ts # Subscription service
+ │   ├── 📂 components/         # Reusable components
+ │   │   ├── 📂 features/       # Feature-specific components
+ │   │   │   ├── 📂 analysis/   # Analysis components
+ │   │   │   │   ├── 📄 AnalysisForm.tsx
+ │   │   │   │   ├── 📄 AnalysisResults.tsx
+ │   │   │   │   └── 📄 ConfidenceIndicator.tsx
+ │   │   │   └── 📂 auth/       # Authentication components
+ │   │   └── 📂 ui/             # UI components
+ │   │       ├── 📄 Button.tsx
+ │   │       ├── 📄 Card.tsx
+ │   │       └── 📄 Input.tsx
+ │   ├── 📂 context/            # React context providers
+ │   │   ├── 📄 AuthContext.tsx
+ │   │   └── 📄 AnalysisContext.tsx
+ │   ├── 📂 hooks/              # Custom React hooks
+ │   │   ├── 📄 useAuth.ts
+ │   │   └── 📄 useAnalyzer.ts
+ │   ├── 📂 pages/              # Route components
+ │   │   ├── 📄 HomePage.tsx
+ │   │   ├── 📄 AnalyzePage.tsx
+ │   │   └── 📄 DashboardPage.tsx
+ │   └── 📂 utils/              # Utility functions
+ │       ├── 📄 api.ts          # API helpers
+ │       └── 📄 validation.ts   # Form validation
+ └── 📂 public/                 # Static assets
+     ├── 📂 images/
+     └── 📄 favicon.ico
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v16+)
+- Python (v3.10+)
+- npm or yarn
+- Git
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/ai-content-detector.git
+cd ai-content-detector
+```
+
+2. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+3. Frontend Setup
+```bash
+cd frontend
+npm install  # or yarn install
+```
+
+### Running the Application
+
+1. Start the Backend
+```bash
+cd backend
+uvicorn app.main:app --reload --port 8000
+```
+
+2. Start the Frontend
+```bash
+cd frontend
+npm run dev  # or yarn dev
+```
+
+The application will be available at `http://localhost:5173`
+
+## 📝 Usage
+
+1. **Analyze Content**
+   - Visit the homepage
+   - Enter text or upload a file (.txt, .docx)
+   - Get instant AI detection results
+
+2. **Premium Features** (requires login)
+   - Save analysis history
+   - Access advanced detection features
+   - Manage subscription plans
+
+## 🔧 Development Notes
+
+### Provider Structure
+```
+AuthProvider
+  └─ SubscriptionProvider
+      └─ AnalysisProvider
+          └─ Layout
+              └─ Routes
+```
+
+### Known Issues & Fixes
+- Fixed React render crash with Radix `Slot` (Button/Link pattern)
+- Added comprehensive error boundaries
+- Improved type checking and validation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## ✨ Acknowledgments
+
+- [FastAPI](https://fastapi.tiangolo.com/) for the excellent API framework
+- [React](https://reactjs.org/) for the powerful UI library
+- [TailwindCSS](https://tailwindcss.com/) for the utility-first CSS framework
