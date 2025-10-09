@@ -1,40 +1,66 @@
-from fastapi import APIRouter, UploadFile, File, Form
-from typing import Optional
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Body
+from typing import Optional, Union, Dict
 import json
+import datetime
+from ..models.analyzer import AIContentAnalyzer
+import io
+import docx
+from pydantic import BaseModel
 
 router = APIRouter()
+analyzer = AIContentAnalyzer()
 
-@router.post("/analyze")
+class AnalyzeTextRequest(BaseModel):
+    content: str
+    options: Optional[Dict] = None
+
+# For file uploads
+@router.post("/analyze/file")
 async def analyze_file(
     file: UploadFile = File(...),
     options: Optional[str] = Form(None)
 ):
     try:
-        # Read the file content
-        content = await file.read()
+        file_content = await file.read()
         
         if file.content_type == 'text/plain':
-            text_content = content.decode('utf-8')
+            text_content = file_content.decode('utf-8')
         elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            # For now, we'll just return an error for .docx files
-            return {"error": "DOCX files are not supported yet"}
+            doc = docx.Document(io.BytesIO(file_content))
+            text_content = '\n'.join([paragraph.text for paragraph in doc.paragraphs])
         else:
-            return {"error": f"Unsupported file type: {file.content_type}"}
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {file.content_type}")
 
-        # Parse options if provided
-        analysis_options = {}
-        if options:
-            analysis_options = json.loads(options)
-
-        # For now, return a mock analysis result
+        analysis_options = json.loads(options) if options else {}
+        result = analyzer.analyze_text(text_content)
+        
         return {
             "success": True,
             "data": {
-                "confidence": 0.85,
-                "classification": "AI_GENERATED",
+                **result,
                 "textLength": len(text_content),
-                "language": "en"
+                "createdAt": datetime.datetime.now().isoformat(),
             }
         }
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
+
+# For direct text analysis
+@router.post("/analyze")
+async def analyze_text(request: AnalyzeTextRequest):
+    try:
+        if not request.content.strip():
+            raise HTTPException(status_code=400, detail="Content cannot be empty")
+
+        result = analyzer.analyze_text(request.content)
+        
+        return {
+            "success": True,
+            "data": {
+                **result,
+                "textLength": len(request.content),
+                "createdAt": datetime.datetime.now().isoformat(),
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
