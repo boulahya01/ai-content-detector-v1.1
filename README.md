@@ -1,4 +1,4 @@
-# 🎯 AI Content Detector
+#  AI Content Detector
 
 An advanced web application that helps you detect AI-generated content with high accuracy and real-time analysis.
 
@@ -7,7 +7,7 @@ An advanced web application that helps you detect AI-generated content with high
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-## 📋 Overview
+##  Overview
 
 The AI Content Detector is a powerful web application that helps users identify AI-generated content. Key points:
 
@@ -15,7 +15,7 @@ The AI Content Detector is a powerful web application that helps users identify 
 2. **Instant Analysis**: Direct content analysis from the landing page
 3. **Optional Login**: Required only for premium features (history, subscriptions)
 
-## 🌟 Features
+##  Features
 
 - Real-time AI content detection
 - Support for multiple file formats (.txt, .docx)
@@ -26,7 +26,7 @@ The AI Content Detector is a powerful web application that helps users identify 
 - RESTful API with FastAPI
 - Comprehensive error handling
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **React**: UI library
@@ -40,7 +40,7 @@ The AI Content Detector is a powerful web application that helps users identify 
 - **SQLAlchemy**: Database ORM
 - **JWT**: Authentication
 
-## 📦 Project Structure
+##  Project Structure
 
 ### Root Directory
 ```
@@ -118,7 +118,7 @@ The AI Content Detector is a powerful web application that helps users identify 
      └── 📄 favicon.ico
 ```
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js (v16+)
@@ -164,7 +164,7 @@ npm run dev  # or yarn dev
 
 The application will be available at `http://localhost:5173`
 
-## 📝 Usage
+##  Usage
 
 1. **Analyze Content**
    - Visit the homepage
@@ -176,7 +176,7 @@ The application will be available at `http://localhost:5173`
    - Access advanced detection features
    - Manage subscription plans
 
-## 🔧 Development Notes
+##  Development Notes
 
 ### Provider Structure
 ```
@@ -192,7 +192,7 @@ AuthProvider
 - Added comprehensive error boundaries
 - Improved type checking and validation
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -200,11 +200,11 @@ AuthProvider
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## ✨ Acknowledgments
+##  Acknowledgments
 
 - [FastAPI](https://fastapi.tiangolo.com/) for the excellent API framework
 - [React](https://reactjs.org/) for the powerful UI library
