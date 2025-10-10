@@ -1,0 +1,95 @@
+"""Logging configuration for the application."""
+import logging
+import logging.handlers
+import os
+from pathlib import Path
+import json
+from typing import Any, Dict
+
+class JSONFormatter(logging.Formatter):
+    """Custom formatter that outputs logs in JSON format."""
+    
+    def format(self, record: logging.LogRecord) -> str:
+        """Format log record as JSON.
+        
+        Args:
+            record: Log record to format.
+            
+        Returns:
+            JSON formatted log string.
+        """
+        log_object: Dict[str, Any] = {
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        
+        # Add exception info if present
+        if record.exc_info:
+            log_object["exception"] = self.formatException(record.exc_info)
+        
+        # Add extra fields
+        if hasattr(record, "details"):
+            log_object["details"] = record.details
+        
+        return json.dumps(log_object)
+
+def setup_logging(log_dir: str = "logs") -> None:
+    """Set up application logging.
+    
+    Args:
+        log_dir: Directory to store log files.
+    """
+    # Create logs directory if it doesn't exist
+    log_path = Path(log_dir)
+    log_path.mkdir(exist_ok=True)
+    
+    # Create formatters
+    json_formatter = JSONFormatter()
+    console_formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(console_formatter)
+    console_handler.setLevel(logging.INFO)
+    root_logger.addHandler(console_handler)
+    
+    # File handlers
+    handlers = {
+        'error': {
+            'filename': log_path / 'error.log',
+            'level': logging.ERROR,
+        },
+        'info': {
+            'filename': log_path / 'info.log',
+            'level': logging.INFO,
+        },
+        'debug': {
+            'filename': log_path / 'debug.log',
+            'level': logging.DEBUG,
+        }
+    }
+    
+    for handler_config in handlers.values():
+        file_handler = logging.handlers.RotatingFileHandler(
+            handler_config['filename'],
+            maxBytes=10*1024*1024,  # 10MB
+            backupCount=5
+        )
+        file_handler.setFormatter(json_formatter)
+        file_handler.setLevel(handler_config['level'])
+        root_logger.addHandler(file_handler)
+    
+    # Set module-specific log levels
+    logging.getLogger('uvicorn').setLevel(logging.INFO)
+    logging.getLogger('fastapi').setLevel(logging.INFO)
+    
+    # Log startup message
+    root_logger.info("Logging system initialized")
