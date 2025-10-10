@@ -39,6 +39,15 @@ class ValidationError(AIDetectorError):
             {"field": field, "value": value}
         )
 
+class FileValidationError(ValidationError):
+    """File validation errors."""
+    def __init__(self, message: str, value: Any = None):
+        super().__init__(
+            f"File validation error: {message}",
+            "file",
+            value
+        )
+
 class TextValidationError(ValidationError):
     """Text input validation errors."""
     def __init__(self, reason: str, text_length: int):
