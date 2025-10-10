@@ -4,7 +4,89 @@ import logging.handlers
 import os
 from pathlib import Path
 import json
-from typing import Any, Dict
+import time
+from typing import Any, Dict, Optional
+from datetime import datetime
+import psutil
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+import uuid
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    """Middleware for logging detailed request metrics."""
+    
+    async def dispatch(self, request: Request, call_next):
+        """Process request and log metrics.
+        
+        Args:
+            request: The incoming request.
+            call_next: The next middleware or route handler.
+            
+        Returns:
+            Response from the next handler.
+        """
+        request_id = str(uuid.uuid4())
+        start_time = time.time()
+        
+        # Get request details
+        request_details = {
+            "request_id": request_id,
+            "method": request.method,
+            "url": str(request.url),
+            "client_ip": request.client.host,
+            "user_agent": request.headers.get("user-agent", "Unknown"),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        
+        # Get initial resource usage
+        process = psutil.Process()
+        initial_memory = process.memory_info().rss
+        initial_cpu = process.cpu_percent()
+        
+        response = None
+        try:
+            response = await call_next(request)
+            
+            # Calculate metrics
+            duration = time.time() - start_time
+            memory_used = process.memory_info().rss - initial_memory
+            cpu_used = process.cpu_percent() - initial_cpu
+            
+            # Log success metrics
+            logging.getLogger("request").info(
+                "Request completed",
+                extra={
+                    "details": {
+                        **request_details,
+                        "status_code": response.status_code,
+                        "duration": round(duration * 1000, 2),  # ms
+                        "memory_used": memory_used,
+                        "cpu_used": cpu_used,
+                        "outcome": "success"
+                    }
+                }
+            )
+            
+            # Add request ID to response headers
+            response.headers["X-Request-ID"] = request_id
+            return response
+            
+        except Exception as e:
+            # Log error metrics
+            duration = time.time() - start_time
+            logging.getLogger("request").error(
+                "Request failed",
+                extra={
+                    "details": {
+                        **request_details,
+                        "duration": round(duration * 1000, 2),  # ms
+                        "error": str(e),
+                        "outcome": "error"
+                    }
+                },
+                exc_info=True
+            )
+            raise
 
 class JSONFormatter(logging.Formatter):
     """Custom formatter that outputs logs in JSON format."""
@@ -61,7 +143,7 @@ def setup_logging(log_dir: str = "logs") -> None:
     console_handler.setLevel(logging.INFO)
     root_logger.addHandler(console_handler)
     
-    # File handlers
+    # File handlers with different log types
     handlers = {
         'error': {
             'filename': log_path / 'error.log',
@@ -74,6 +156,14 @@ def setup_logging(log_dir: str = "logs") -> None:
         'debug': {
             'filename': log_path / 'debug.log',
             'level': logging.DEBUG,
+        },
+        'request': {
+            'filename': log_path / 'request.log',
+            'level': logging.INFO,
+        },
+        'performance': {
+            'filename': log_path / 'performance.log',
+            'level': logging.INFO,
         }
     }
     
