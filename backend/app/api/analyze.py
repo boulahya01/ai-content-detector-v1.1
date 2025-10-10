@@ -28,10 +28,6 @@ performance_monitor = PerformanceMonitor(metrics_collector)
 # Initialize analyzer with delayed loading
 analyzer = AIContentAnalyzer(model_name="roberta-base", use_cache=True, quantize=True)
 
-# Initialize monitoring
-metrics_collector = MetricsCollector()
-performance_monitor = PerformanceMonitor(metrics_collector)
-
 def error_handler(func):
     """Decorator for consistent error handling across endpoints."""
     @wraps(func)
