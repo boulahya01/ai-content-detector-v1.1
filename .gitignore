@@ -42,3 +42,5 @@ backend/**/*.dylib
 
 # Test files
 backend/test.txt
+
+.pytest_cache/
