@@ -32,5 +32,13 @@ next-5-edits.txt
 __pycache__/
 *.py[cod]
 
+# Python cache files - more specific patterns
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/**/*.pyd
+backend/**/*.so
+backend/**/*.dylib
+
 # Test files
 backend/test.txt
