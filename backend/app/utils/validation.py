@@ -1,26 +1,44 @@
 """Input validation and sanitization utilities."""
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, Literal
 import re
-from .exceptions import TextValidationError, ValidationError
+import os
+import magic
+import html
+from .exceptions import TextValidationError, ValidationError, FileValidationError
 
 class InputValidator:
     """Handles input validation and sanitization."""
     
     # Text validation constants
     MIN_TEXT_LENGTH = 50
-    MAX_TEXT_LENGTH = 50000
+    FREE_MAX_TEXT_LENGTH = 50000
+    PAID_MAX_TEXT_LENGTH = 200000
     MIN_WORDS = 10
-    MAX_WORDS = 10000
+    FREE_MAX_WORDS = 10000
+    PAID_MAX_WORDS = 40000  # Approximate ratio based on character limits
     
     # File validation constants
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+    ALLOWED_MIME_TYPES = {
+        'text/plain': ['.txt'],
+        'text/html': ['.html', '.htm'],
+        'application/pdf': ['.pdf'],
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+        'application/msword': ['.doc'],
+        'text/markdown': ['.md', '.markdown'],
+        'text/rtf': ['.rtf']
+    }
+    
+    # Initialize magic MIME type detector
+    mime = magic.Magic(mime=True)
     
     @staticmethod
-    def validate_text(text: str) -> str:
+    def validate_text(text: str, user_tier: Literal["free", "paid"] = "free") -> str:
         """Validate and sanitize text input.
         
         Args:
             text: Input text to validate.
+            user_tier: User's subscription tier ("free" or "paid").
             
         Returns:
             Sanitized text.
@@ -35,17 +53,28 @@ class InputValidator:
         text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)
         text = text.strip()
         
+        # Basic XSS prevention
+        text = html.escape(text)
+        
+        # Remove potentially malicious patterns
+        text = re.sub(r'javascript:|data:|vbscript:|onload=|onerror=', '', text, flags=re.IGNORECASE)
+        
         # Check length constraints
-        if len(text) < InputValidator.MIN_TEXT_LENGTH:
+        text_length = len(text)
+        if text_length < InputValidator.MIN_TEXT_LENGTH:
             raise TextValidationError(
                 f"Text too short (minimum {InputValidator.MIN_TEXT_LENGTH} characters)",
-                len(text)
+                text_length
             )
         
-        if len(text) > InputValidator.MAX_TEXT_LENGTH:
+        max_length = (InputValidator.PAID_MAX_TEXT_LENGTH 
+                     if user_tier == "paid" 
+                     else InputValidator.FREE_MAX_TEXT_LENGTH)
+        
+        if text_length > max_length:
             raise TextValidationError(
-                f"Text too long (maximum {InputValidator.MAX_TEXT_LENGTH} characters)",
-                len(text)
+                f"Text too long (maximum {max_length:,} characters for {user_tier} tier)",
+                text_length
             )
         
         # Check word count
@@ -56,30 +85,77 @@ class InputValidator:
                 word_count
             )
         
-        if word_count > InputValidator.MAX_WORDS:
+        max_words = (InputValidator.PAID_MAX_WORDS 
+                    if user_tier == "paid" 
+                    else InputValidator.FREE_MAX_WORDS)
+        
+        if word_count > max_words:
             raise TextValidationError(
-                f"Too many words (maximum {InputValidator.MAX_WORDS} words)",
+                f"Too many words (maximum {max_words:,} words for {user_tier} tier)",
                 word_count
             )
         
         return text
 
-    @staticmethod
-    def validate_file_size(size: int) -> None:
-        """Validate file size.
+    @classmethod
+    def validate_file(cls, file_path: str, content: bytes = None) -> Dict[str, str]:
+        """Validate file content and type.
         
         Args:
-            size: File size in bytes.
+            file_path: Path to the file or filename.
+            content: Optional file content as bytes.
+            
+        Returns:
+            Dict containing validated mime_type and extension.
             
         Raises:
-            ValidationError: If file size is invalid.
+            FileValidationError: If file is invalid.
         """
-        if size > InputValidator.MAX_FILE_SIZE:
-            raise ValidationError(
-                f"File too large (maximum {InputValidator.MAX_FILE_SIZE/1024/1024:.1f}MB)",
-                "file_size",
-                size
-            )
+        try:
+            # Get file size
+            size = len(content) if content else os.path.getsize(file_path)
+            if size > cls.MAX_FILE_SIZE:
+                raise FileValidationError(
+                    f"File too large (maximum {cls.MAX_FILE_SIZE/1024/1024:.1f}MB)",
+                    size
+                )
+            
+            # Check MIME type
+            mime_type = cls.mime.from_buffer(content) if content else cls.mime.from_file(file_path)
+            
+            if mime_type not in cls.ALLOWED_MIME_TYPES:
+                raise FileValidationError(
+                    f"Unsupported file type: {mime_type}",
+                    mime_type
+                )
+                
+            # Validate extension
+            _, ext = os.path.splitext(file_path.lower())
+            if ext not in cls.ALLOWED_MIME_TYPES[mime_type]:
+                raise FileValidationError(
+                    f"Invalid file extension {ext} for MIME type {mime_type}",
+                    ext
+                )
+                
+            return {
+                "mime_type": mime_type,
+                "extension": ext
+            }
+            
+        except (IOError, OSError) as e:
+            raise FileValidationError(f"Error accessing file: {str(e)}")
+            
+    @classmethod
+    def is_valid_file_type(cls, mime_type: str) -> bool:
+        """Check if a MIME type is allowed.
+        
+        Args:
+            mime_type: MIME type to check.
+            
+        Returns:
+            bool: True if MIME type is allowed.
+        """
+        return mime_type in cls.ALLOWED_MIME_TYPES
 
     @staticmethod
     def validate_options(options: Dict[str, Any]) -> Dict[str, Any]:
