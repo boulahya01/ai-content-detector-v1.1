@@ -1,4 +1,4 @@
-# 🔍 AI Content Detector v1.1.0
+tttttttttttttttttttttttttttttttttttt# 🔍 AI Content Detector v1.1.0
 
 An advanced web application that helps you detect AI-generated content with high accuracy and real-time analysis. Features batch processing, comprehensive monitoring, and mu### Usage
 
@@ -10,7 +10,7 @@ An advanced web application that helps you detect AI-generated content with high
 
 2. **Batch Processing**
    - Upload multiple files (up to 10)
-   - Monitor real-time processing progress
+   - Monitor real-time processing progresttttttttttttttttttttttttgs
    - View batch analysis results
    - Download consolidated reports
 
@@ -203,11 +203,35 @@ source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Configure Backend
-   - Copy `.env.example` to `.env`
-   - Set your environment variables
+3. Configure Environment Variables
+
+The application requires environment variables to be set up for both backend and frontend. Example configuration files are provided:
+
+#### Backend Configuration
+Copy `backend/.env.example` to `backend/.env` and configure:
+- `JWT_SECRET_KEY`: Secret key for JWT token generation (keep this secure!)
+- `JWT_REFRESH_SECRET_KEY`: Secret key for refresh tokens (keep this secure!)
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time in minutes
+- `DATABASE_URL`: Database connection string
+- `FRONTEND_URL`: URL of the frontend application (for CORS)
+- `SMTP_*`: Email configuration (optional, for notifications)
+
+#### Frontend Configuration
+Copy `frontend/.env.example` to `frontend/.env` and configure:
+- `VITE_API_URL`: Backend API endpoint
+- `VITE_JWT_EXPIRES_IN`: JWT token expiration time
+- `VITE_REFRESH_TOKEN_EXPIRES_IN`: Refresh token expiration time
+
+⚠️ **Security Notes**:
+- Never commit `.env` files to version control
+- Use strong, unique secrets in production
+- Keep production credentials strictly confidential
+- Regularly rotate security keys and credentials
+
+4. Additional Configuration
    - Configure logging levels in `utils/logging_config.py`
    - Set rate limits in `utils/rate_limiter.py`
+   - Review CORS settings in `main.py` if needed
 
 4. Frontend Setup
 ```bash
@@ -217,9 +241,15 @@ npm install  # or yarn install
 
 ### Running the Application
 
-1. Start the Backend
+1. Initialize the Database
 ```bash
 cd backend
+# Run database migrations
+alembic upgrade head
+```
+
+2. Start the Backend
+```bash
 # Start with monitoring and logging configuration
 uvicorn app.main:app --reload --port 8000 --log-config utils/logging_config.py
 ```
