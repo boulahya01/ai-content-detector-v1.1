@@ -23,19 +23,16 @@ class User(Base):
     role = Column(Enum(UserRole), default=UserRole.FREE, nullable=False)
     
     # Account status
-    is_active = Column(Boolean, default=True, nullable=False)
-    email_verified = Column(Boolean, default=False, nullable=False)
+    is_active = Column(Boolean, server_default='true', nullable=False)
     
-    # Usage and limits
-    credits = Column(Integer, default=5, nullable=False)  # Free credits on signup
-    requests_count = Column(Integer, default=0, nullable=False)
-    daily_requests = Column(Integer, default=0, nullable=False)
+    # Usage limits
+    credits = Column(Integer, server_default='5', nullable=False)  # Free credits on signup
+    requests_count = Column(Integer, server_default='0', nullable=False)  # Total number of requests made
     
     # Timestamps
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, onupdate=func.now())
     last_login = Column(DateTime)
-    email_verified_at = Column(DateTime)
 
     def __repr__(self):
         return f"<User {self.email}>"

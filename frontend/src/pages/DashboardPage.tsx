@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAnalysisHistory } from '@/hooks/useAnalyzer';
 import { Button } from '@/components/ui/Button';
@@ -16,29 +16,29 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Welcome Section */}
         <div className="col-span-2">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-white">
             Welcome back, {user?.name}!
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-white/70">
             Here's an overview of your AI content detection activities.
           </p>
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+  <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">
             Subscription Status
           </h2>
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-gray-600">Current Plan</p>
-              <p className="text-xl font-medium text-gray-900">
+              <p className="text-sm text-white/70">Current Plan</p>
+              <p className="text-xl font-medium text-white">
                 {subscription?.planType || 'Free'} Plan
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Analyses Remaining</p>
-              <p className="text-xl font-medium text-gray-900">
+              <p className="text-sm text-white/70">Analyses Remaining</p>
+              <p className="text-xl font-medium text-white">
                 {subscription?.analysisLimit || 0} credits
               </p>
             </div>
@@ -51,8 +51,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+  <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">
             Quick Actions
           </h2>
           <div className="space-y-4">
@@ -69,14 +69,14 @@ export default function DashboardPage() {
 
         {/* Recent Analyses */}
         <div className="col-span-2">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="card">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-white">
                 Recent Analyses
               </h2>
               <Link
                 to="/history"
-                className="text-sm text-primary hover:text-primary/80"
+                className="text-sm text-white hover:text-white/80"
               >
                 View all
               </Link>
@@ -91,19 +91,19 @@ export default function DashboardPage() {
                   <div key={analysis.id} className="py-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-white">
                           {analysis.contentPreview.substring(0, 100)}...
                         </p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-white/70 mt-1">
                           Score: {analysis.authenticityScore * 100}%
                         </p>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
+                      <span className={`px-2 py-1 text-xs rounded-xl border ${
                         analysis.confidenceLevel === 'high'
-                          ? 'bg-red-100 text-red-800'
+                          ? 'border-red-500 text-red-500'
                           : analysis.confidenceLevel === 'medium'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
+                          ? 'border-yellow-500 text-yellow-500'
+                          : 'border-green-500 text-green-500'
                       }`}>
                         {analysis.confidenceLevel}
                       </span>
@@ -112,9 +112,9 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-8">
+              <p className="text-center text-white/70 py-8">
                 No analyses performed yet.{' '}
-                <Link to="/analyze" className="text-primary hover:underline">
+                <Link to="/analyze" className="text-white hover:text-white/80 underline">
                   Start your first analysis
                 </Link>
               </p>

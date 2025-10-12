@@ -26,11 +26,9 @@ export default function AnalyzePage() {
   return (
     <div className="content-container py-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Analyze Content
-        </h1>
+        <h1 className="text-3xl font-bold mb-8">Analyze Content</h1>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="card mb-8">
           {/* File upload component */}
           <FileUpload />
           <div className="mt-4">

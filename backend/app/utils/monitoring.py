@@ -130,14 +130,16 @@ class Alert:
             "resolved_at": self.resolved_at
         }
 
-class AlertManager:
-
 @dataclass
 class MetricPoint:
     """Data class for storing metric points."""
     timestamp: float
     value: float
-    labels: Dict[str, str]
+    labels: Dict[str, str] = None
+    
+    def __post_init__(self):
+        if self.labels is None:
+            self.labels = {}
 
 class MetricsCollector:
     """Collects and stores system and application metrics. Implements singleton pattern."""

@@ -8,6 +8,9 @@ export type User = {
   name: string;
   avatarUrl: string;
   createdAt: string;
+  emailVerified: boolean;
+  role: 'user' | 'admin';
+  lastLoginAt: string;
 };
 
 // Subscription and Plan Types

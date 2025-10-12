@@ -28,8 +28,8 @@ from ..models.user import UserRole
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    firstName: Optional[str] = None
-    lastName: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
     @validator('password')
     def password_must_be_strong(cls, v):
@@ -52,10 +52,8 @@ class UserResponse(BaseModel):
     last_name: Optional[str]
     role: UserRole
     is_active: bool
-    email_verified: bool
     credits: int
     requests_count: int
-    daily_requests: int
     created_at: datetime
     updated_at: Optional[datetime]
     last_login: Optional[datetime]
@@ -85,15 +83,13 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     # Create new user with updated schema
     user = User(
         email=user_data.email,
-        first_name=user_data.firstName,
-        last_name=user_data.lastName,
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
         password_hash=get_password_hash(user_data.password),
         role=UserRole.FREE,
         is_active=True,
-        email_verified=False,
         credits=5,  # Default free credits
-        requests_count=0,
-        daily_requests=0
+        requests_count=0  # Initial request count
     )
     db.add(user)
     try:
@@ -107,25 +103,44 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         )
     return user
 
-@router.post("/login", response_model=Token)
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserResponse
+    expires_in: int = 86400  # 24 hours in seconds
+
+@router.post("/login", response_model=LoginResponse)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """Login user and return access token."""
+    """Login user and return access token and user data."""
     # Find user
     user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="User not found with this email",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    if not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
     # Update last_login and generate token
     user.last_login = datetime.utcnow()
     db.commit()
+    db.refresh(user)
     
     # Generate token (ensure sub is a string)
     access_token = create_access_token(data={"sub": str(user.id)})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user,
+        "expires_in": 86400  # 24 hours in seconds
+    }
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     """Get current authenticated user."""

@@ -1,7 +1,10 @@
+@import './styles/design-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* legacy token kept for compatibility */
 :root {
 	--content-max-width: 72rem;
 }
@@ -12,11 +15,14 @@
 	}
 
 	body {
-		@apply bg-white text-gray-800 antialiased;
+		background-color: var(--bg-900);
+		color: var(--text-100);
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
 	}
 
 	h1, h2, h3 {
-			@apply text-gray-900;
+		color: var(--text-100);
 	}
 
 		h1 {

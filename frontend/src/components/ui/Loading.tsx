@@ -16,7 +16,7 @@ export function Loading({ className, size = 'md', fullScreen = false }: LoadingP
   const Spinner = (
     <div
       className={cn(
-        'animate-spin rounded-full border-b-2 border-primary',
+        'animate-spin rounded-full border-b-2 border-white',
         sizeClasses[size],
         className
       )}
@@ -25,7 +25,7 @@ export function Loading({ className, size = 'md', fullScreen = false }: LoadingP
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white/80">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/80">
         {Spinner}
       </div>
     );

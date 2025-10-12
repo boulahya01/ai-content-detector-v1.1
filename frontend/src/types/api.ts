@@ -1,6 +1,6 @@
 // API Response Types
 export interface ApiResponse<T> {
-  data: T;
+  data: T & { analysisId?: string };
   status: number;
   message?: string;
 }
@@ -9,13 +9,19 @@ export interface ApiResponse<T> {
 export interface User {
   id: string;
   email: string;
-  name?: string;
-  createdAt: string;
+  first_name?: string;
+  last_name?: string;
+  created_at: string;
+  credits: number;
+  avatar?: string;
+  is_active: boolean;
 }
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  access_token: string;
+  token_type: string;
+  expires_in: number;
 }
 
 // Analysis Types
@@ -26,6 +32,16 @@ export interface AnalysisRequest {
     detailed?: boolean;
     threshold?: number;
   };
+}
+
+export interface AnalysisProgress {
+  analysisId: string;
+  status: 'processing' | 'completed' | 'error';
+  progress: number;
+  stage?: 'initialization' | 'processing' | 'validation' | 'finalization';
+  message?: string;
+  result?: AnalysisResult;
+  error?: string;
 }
 
 export interface AnalysisResult {

@@ -1,16 +1,27 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User } from '../types';
-import api from '../lib/api';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { User, AuthResponse } from '../types/api';
+import * as authApi from '../api/auth';
 
-export interface AuthContextType {
+interface RegisterData {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+}
+
+interface LoginData {
+  username: string; // Using username for email as per API
+  password: string;
+}
+
+interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
   isLoading: boolean;
-  error?: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  isAuthenticated: boolean;
+  login: (data: LoginData) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (email: string, password: string, name?: string) => Promise<void>;
+  updateUser: (data: Partial<User>) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,92 +29,82 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const isAuthenticated = !!user;
-
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const userResponse = await api.get('/auth/profile');
-        setUser(userResponse.data);
-      } catch (error) {
-        console.error('Auth initialization failed:', error);
-        localStorage.removeItem('token');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token } = response.data;
-      localStorage.setItem('token', token);
-
-      const userResponse = await api.get('/auth/profile');
-      setUser(userResponse.data);
-      setError(null);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
-      setError('Login failed. Please try again.');
-      localStorage.removeItem('token');
-      throw error;
-    }
+  const handleUser = (userData: User) => {
+    setUser(userData);
+    setIsAuthenticated(true);
   };
 
-  const signup = async (email: string, password: string, name?: string) => {
-    try {
-      const response = await api.post('/auth/signup', { email, password, name });
-      const { token } = response.data;
-      localStorage.setItem('token', token);
-
-      const userResponse = await api.get('/auth/profile');
-      setUser(userResponse.data);
-      setError(null);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Signup failed:', error);
-      setError('Signup failed. Please try again.');
-      throw error;
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      authApi.getProfile()
+        .then(userData => {
+          if (userData.is_active) {
+            handleUser(userData);
+          } else {
+            // If user is not active (email not verified), log them out
+            localStorage.removeItem('access_token');
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem('access_token');
+          setUser(null);
+          setIsAuthenticated(false);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      setIsLoading(false);
+      setIsAuthenticated(false);
     }
+  }, []);
+
+  const updateUser = (data: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...data } : null);
+  };
+
+  const login = async (data: LoginData) => {
+    const response = await authApi.login(data);
+    localStorage.setItem('access_token', response.access_token);
+    const userData = await authApi.getProfile();
+    handleUser(userData);
+  };
+
+  const register = async (data: RegisterData) => {
+    const response = await authApi.register(data);
+    localStorage.setItem('access_token', response.access_token);
+    const userData = await authApi.getProfile();
+    handleUser(userData);
   };
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout');
+      await authApi.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
+      localStorage.removeItem('access_token');
       setUser(null);
-      navigate('/login');
+      setIsAuthenticated(false);
+      window.location.href = '/login';
     }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        isLoading,
-        error,
-        login,
-        logout,
-        signup
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      isAuthenticated,
+      login,
+      register,
+      logout,
+      updateUser
+    }}>
       {children}
     </AuthContext.Provider>
   );
