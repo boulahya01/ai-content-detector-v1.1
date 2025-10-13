@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { GoogleButton } from '@/components/auth/GoogleButton';
-import { FiMail, FiLock } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { formStyles } from './styles';
 
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -15,31 +13,64 @@ export default function LoginForm() {
     email: '',
     password: '',
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+  const [showPassword, setShowPassword] = useState(false);
+
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case 'email':
+        if (!value) return 'Email is required';
+        if (!/\S+@\S+\.\S+/.test(value)) return 'Please enter a valid email address';
+        return '';
+      case 'password':
+        if (!value) return 'Password is required';
+        return '';
+      default:
+        return '';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate all fields
+    const newErrors: { [key: string]: string } = {};
+    Object.keys(formData).forEach(key => {
+      newErrors[key] = validateField(key, formData[key as keyof typeof formData]);
+    });
+    setErrors(newErrors);
+    setTouched({
+      email: true,
+      password: true
+    });
+
+    // Check if there are any errors
+    if (Object.values(newErrors).some(error => error)) {
+      return;
+    }
+    
     setIsLoading(true);
     try {
       await login({ 
         username: formData.email, 
         password: formData.password 
       });
-      toast.success('Login successful!');
-      // Use replace to prevent going back to login page
+      toast.success('Welcome back!');
       navigate('/dashboard', { replace: true });
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes('not found')) {
-          toast.error('Email not found. Please check your email or register.');
+          toast.error('Email not found');
         } else if (error.message.includes('password')) {
-          toast.error('Incorrect password. Please try again.');
+          toast.error('Incorrect password');
         } else if (error.message.includes('connect')) {
-          toast.error('Unable to connect to the server. Please check your internet connection.');
+          toast.error('Connection error');
         } else {
           toast.error(error.message);
         }
       } else {
-        toast.error('An error occurred during login. Please try again.');
+        toast.error('Could not sign in');
       }
     } finally {
       setIsLoading(false);
@@ -55,15 +86,14 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border border-white/10 bg-white/5 p-7 shadow-sm backdrop-blur-sm">
+      <h2 className="text-4xl font-bold text-white/90 text-center mb-6">Login</h2>
+
       <div className="space-y-4">
         <div className="form-group">
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-            Email address
-          </label>
           <div className="relative">
-            <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" />
-            <Input
+            <FiMail className={formStyles.inputIcon} />
+            <input
               id="email"
               name="email"
               type="email"
@@ -71,84 +101,103 @@ export default function LoginForm() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="pl-10 w-full"
-              placeholder="Enter your email"
+              className={`${formStyles.input} ${touched.email && errors.email ? '!border-red-500' : ''}`}
+
+              placeholder="Email Address"
             />
+            {touched.email && errors.email && (
+              <p className={formStyles.errorText}>{errors.email}</p>
+            )}
           </div>
         </div>
 
         <div className="form-group">
-          <div className="flex items-center justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-white">
-              Password
-            </label>
-            <Link 
-              to="/forgot-password" 
-              className="text-sm font-medium text-white hover:text-white/80"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative mt-1">
-            <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" />
-            <Input
+          <div className="relative">
+            <FiLock className={formStyles.inputIcon} />
+            <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
               value={formData.password}
               onChange={handleChange}
-              className="pl-10 w-full"
-              placeholder="Enter your password"
+              className={`${formStyles.input} ${touched.password && errors.password ? '!border-red-500' : ''}`}
+              placeholder="Password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+            </button>
+            {touched.password && errors.password && (
+              <p className={formStyles.errorText}>{errors.password}</p>
+            )}
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <label className="flex items-center gap-2 group cursor-pointer">
+              <div className="relative flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="peer sr-only"
+                />
+                <div className="h-4 w-4 rounded border border-white/20 bg-white/5 transition-colors 
+                  peer-checked:bg-accent-500 peer-checked:border-accent-500 
+                  peer-focus:ring-2 peer-focus:ring-accent-500/30
+                  group-hover:border-white/30"
+                />
+                <svg
+                  className="absolute left-0 top-0 h-4 w-4 p-[2px] text-white opacity-0 transition-opacity peer-checked:opacity-100"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
+                Remember me
+              </span>
+            </label>
+            <Link to="/forgot-password" className={formStyles.link}>
+              Forgot password?
+            </Link>
           </div>
         </div>
-
-        <div className="flex items-center">
-          <input
-            id="remember-me"
-            name="remember-me"
-            type="checkbox"
-            className="h-4 w-4 rounded border-border text-accent-500 focus:ring-accent-500"
-          />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-secondary-500">
-            Remember me
-          </label>
-        </div>
       </div>
 
-      <Button
+      <button
         type="submit"
-        className="w-full"
-        disabled={isLoading}
-        isLoading={isLoading}
+        disabled={isLoading || Object.keys(errors).some(key => errors[key]) || Object.keys(formData).some(key => !formData[key as keyof typeof formData])}
+        className={formStyles.button}
+        style={{ background: 'var(--accent-500)' }}
       >
-        Sign in
-      </Button>
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+            <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
+            Signing in...
+          </div>
+        ) : (
+          'Sign in'
+        )}
+      </button>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-background px-2 text-secondary-500">
-            Or continue with
-          </span>
-        </div>
-      </div>
-
-      <GoogleButton className="w-full" />
-
-      <p className="text-center text-sm text-secondary-500">
+      <div className="text-center text-sm text-white/70">
         Don't have an account?{' '}
-        <Link
-          to="/register"
-          className="font-medium text-accent-500 hover:text-accent-600"
-        >
+        <Link to="/register" className={formStyles.link}>
           Sign up
         </Link>
-      </p>
+      </div>
     </form>
   );
 }

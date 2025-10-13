@@ -8,7 +8,7 @@ export default function GoogleButton({ onClick, className = '' }: GoogleButtonPr
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center px-4 py-2 rounded-md bg-red-500 text-white ${className}`}
+      className={`inline-flex items-center px-4 py-2 rounded-md bg-accent-500 text-white hover:bg-accent-600 transition-colors ${className}`}
     >
       Sign in with Google (coming soon)
     </button>

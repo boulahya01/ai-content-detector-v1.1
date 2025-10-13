@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { FiMail, FiLock, FiUser } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser, FiEye, FiEyeOff } from 'react-icons/fi';
+import { formStyles } from './styles';
 
 export default function RegisterForm() {
   const navigate = useNavigate();
@@ -12,31 +11,48 @@ export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    first_name: '',
-    last_name: '',
+    fullName: '',
     password: '',
     confirmPassword: ''
   });
 
   const validatePassword = (password: string) => {
     const errors = [];
-    if (password.length < 8) errors.push('Password must be at least 8 characters long');
-    if (!/[A-Z]/.test(password)) errors.push('Password must contain at least one uppercase letter');
-    if (!/[a-z]/.test(password)) errors.push('Password must contain at least one lowercase letter');
-    if (!/[0-9]/.test(password)) errors.push('Password must contain at least one number');
-    if (!/[^A-Za-z0-9]/.test(password)) errors.push('Password must contain at least one special character');
+    if (password.length < 8) errors.push('At least 8 characters');
+    if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
+    if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
+    if (!/[0-9]/.test(password)) errors.push('One number');
+    if (!/[^A-Za-z0-9]/.test(password)) errors.push('One special character');
     return errors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate all fields
+    const newErrors: { [key: string]: string } = {};
+    Object.keys(formData).forEach(key => {
+      newErrors[key] = validateField(key, formData[key as keyof typeof formData]);
+    });
+    setErrors(newErrors);
+    setTouched({
+      email: true,
+      fullName: true,
+      password: true,
+      confirmPassword: true
+    });
+
+    // Check if there are any errors
+    if (Object.values(newErrors).some(error => error)) {
+      return;
+    }
+    
     // Validate password
     const passwordErrors = validatePassword(formData.password);
     if (passwordErrors.length > 0) {
       toast.error(
         <div>
-          <p className="font-medium">Password does not meet requirements:</p>
+          <p className="font-medium">Password requirements:</p>
           <ul className="list-disc list-inside">
             {passwordErrors.map((error, i) => (
               <li key={i}>{error}</li>
@@ -55,21 +71,26 @@ export default function RegisterForm() {
 
     setIsLoading(true);
     try {
+      // Split full name into first and last name
+      const nameParts = formData.fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
       await register({
         email: formData.email,
         password: formData.password,
-        first_name: formData.first_name,
-        last_name: formData.last_name
+        first_name: firstName,
+        last_name: lastName
       });
       
-      toast.success('Registration successful! Welcome to AI Content Detector');
+      toast.success('Welcome! Your account is ready.');
       navigate('/dashboard', { replace: true });
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes('already registered')) {
-          toast.error('This email is already registered. Please try logging in instead.', {
+          if (error.message.includes('already registered')) {
+          toast.error('Email already registered', {
             action: {
-              label: 'Go to Login',
+              label: 'Sign in',
               onClick: () => navigate('/login')
             }
           });
@@ -77,7 +98,7 @@ export default function RegisterForm() {
           toast.error(error.message);
         }
       } else {
-        toast.error('Registration failed. Please try again.');
+        toast.error('Could not create account');
       }
     } finally {
       setIsLoading(false);
@@ -86,6 +107,8 @@ export default function RegisterForm() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateField = (name: string, value: string) => {
     switch (name) {
@@ -93,10 +116,10 @@ export default function RegisterForm() {
         if (!value) return 'Email is required';
         if (!/\S+@\S+\.\S+/.test(value)) return 'Please enter a valid email address';
         return '';
-      case 'first_name':
-      case 'last_name':
-        if (!value) return `${name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')} is required`;
-        if (value.length < 2) return 'Must be at least 2 characters';
+      case 'fullName':
+        if (!value) return 'Full name is required';
+        if (value.length < 2) return 'Full name must be at least 2 characters';
+        if (!/^[a-zA-Z\s]*$/.test(value)) return 'Full name can only contain letters and spaces';
         return '';
       case 'password':
         if (!value) return 'Password is required';
@@ -117,38 +140,17 @@ export default function RegisterForm() {
       ...prev,
       [name]: value
     }));
-    
-    // Validate on change if field has been touched
-    if (touched[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: validateField(name, value)
-      }));
-    }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    setErrors(prev => ({
-      ...prev,
-      [name]: validateField(name, value)
-    }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border border-white/10 bg-white/5 p-7 shadow-sm backdrop-blur-sm">
+            <h2 className="text-4xl font-bold text-white/90 text-center mb-6">Create Account</h2>
+
       <div className="space-y-4">
         <div className="form-group">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email address
-          </label>
           <div className="relative">
-            <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <Input
+            <FiMail className={formStyles.inputIcon} />
+            <input
               id="email"
               name="email"
               type="email"
@@ -156,130 +158,115 @@ export default function RegisterForm() {
               required
               value={formData.email}
               onChange={handleChange}
-              onBlur={handleBlur}
-              className={`pl-10 w-full ${touched.email && errors.email ? 'border-red-500' : ''}`}
-              placeholder="Enter your email"
+              className={`${formStyles.input} ${touched.email && errors.email ? '!border-red-500' : ''}`}
+
+              placeholder="Email Address"
             />
             {touched.email && errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              <p className={formStyles.errorText}>{errors.email}</p>
             )}
           </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
-            First Name
-          </label>
           <div className="relative">
-            <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <Input
-              id="first_name"
-              name="first_name"
+            <FiUser className={formStyles.inputIcon} />
+            <input
+              id="fullName"
+              name="fullName"
               type="text"
               required
-              value={formData.first_name}
+              value={formData.fullName}
               onChange={handleChange}
-              onBlur={handleBlur}
-              className={`pl-10 w-full ${touched.first_name && errors.first_name ? 'border-red-500' : ''}`}
-              placeholder="Enter your first name"
+              className={`${formStyles.input} ${touched.fullName && errors.fullName ? '!border-red-500' : ''}`}
+              placeholder="Full Name"
             />
-            {touched.first_name && errors.first_name && (
-              <p className="mt-1 text-sm text-red-500">{errors.first_name}</p>
+            {touched.fullName && errors.fullName && (
+              <p className={formStyles.errorText}>{errors.fullName}</p>
             )}
           </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
-            Last Name
-          </label>
           <div className="relative">
-            <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <Input
-              id="last_name"
-              name="last_name"
-              type="text"
-              required
-              value={formData.last_name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={`pl-10 w-full ${touched.last_name && errors.last_name ? 'border-red-500' : ''}`}
-              placeholder="Enter your last name"
-            />
-            {touched.last_name && errors.last_name && (
-              <p className="mt-1 text-sm text-red-500">{errors.last_name}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <div className="relative">
-            <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <Input
+            <FiLock className={formStyles.inputIcon} />
+            <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               value={formData.password}
               onChange={handleChange}
-              onBlur={handleBlur}
-              className={`pl-10 w-full ${touched.password && errors.password ? 'border-red-500' : ''}`}
-              placeholder="Create a password"
+              className={`${formStyles.input} ${touched.password && errors.password ? '!border-red-500' : ''}`}
+              placeholder="Password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+            </button>
             {touched.password && errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+              <p className={formStyles.errorText}>{errors.password}</p>
             )}
           </div>
-          <p className="mt-1 text-sm text-gray-500">
-            Must be at least 8 characters with 1 uppercase, 1 number, and 1 special character
-          </p>
         </div>
 
         <div className="form-group">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-            Confirm Password
-          </label>
           <div className="relative">
-            <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <Input
+            <FiLock className={formStyles.inputIcon} />
+            <input
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              onBlur={handleBlur}
-              className={`pl-10 w-full ${touched.confirmPassword && errors.confirmPassword ? 'border-red-500' : ''}`}
-              placeholder="Confirm your password"
+              className={`${formStyles.input} ${touched.confirmPassword && errors.confirmPassword ? '!border-red-500' : ''}`}
+              placeholder="Confirm Password"
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            >
+              {showConfirmPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+            </button>
             {touched.confirmPassword && errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
             )}
           </div>
+          {(errors.password || errors.confirmPassword) && (
+            <p className={formStyles.helpText}>
+              At least 8 characters with 1 number & symbol.
+            </p>
+          )}
         </div>
       </div>
 
-      <Button
+      <button
         type="submit"
-        className="w-full"
         disabled={isLoading || Object.keys(errors).some(key => errors[key]) || Object.keys(formData).some(key => !formData[key as keyof typeof formData])}
+        className={formStyles.button}
+        style={{ background: 'var(--accent-500)' }}
       >
         {isLoading ? (
           <div className="flex items-center justify-center">
             <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
-            Creating account...
+            Signing up...
           </div>
         ) : (
-          'Create account'
+          'Sign up'
         )}
-      </Button>
+      </button>
 
-      <div className="text-center">
-        <Link to="/login" className="text-sm font-medium text-primary hover:text-primary/90">
-          Already have an account? Sign in
+      <div className="text-center text-sm text-white/70">
+        Already have an account?{' '}
+        <Link to="/login" className={formStyles.link}>
+          Sign in
         </Link>
       </div>
     </form>
