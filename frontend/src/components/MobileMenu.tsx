@@ -7,10 +7,9 @@ interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   navigation: {
-    main: Array<{ name: string; href: string; public: boolean; description: string; icon: string; }>;
-    authenticated: Array<{ name: string; href: string; description: string; icon: string; }>;
-    analysis: Array<{ name: string; href: string; description: string; icon: string; }>;
-    account: Array<{ name: string; href: string; description: string; icon: string; }>;
+    public: Array<{ name: string; href: string; }>;
+    private: Array<{ name: string; href: string; }>;
+    userMenu: Array<{ name: string; href: string; }>;
   };
   user: any | null;
 }
@@ -69,68 +68,33 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
                     <div>
                       <div className="mb-2">
                         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Navigation
+                          {user ? 'Main Menu' : 'Navigation'}
                         </h3>
                       </div>
                       <div className="space-y-1">
-                        {navigation.main.map((item) => (
-                          <Link
-                            key={item.name}
-                            to={item.href}
-                            onClick={onClose}
-                            className={cn(
-                              'block px-3 py-2 rounded-md text-base font-medium text-gray-900',
-                              'hover:bg-primary-50 hover:text-primary-600',
-                              'transition-colors duration-200'
-                            )}
-                          >
-                            {item.name}
-                          </Link>
-                        ))}
-
-                        {user && navigation.authenticated.map((item) => (
-                          <Link
-                            key={item.name}
-                            to={item.href}
-                            onClick={onClose}
-                            className={cn(
-                              'block px-3 py-2 rounded-md text-base font-medium text-gray-900',
-                              'hover:bg-primary-50 hover:text-primary-600',
-                              'transition-colors duration-200'
-                            )}
-                          >
-                            {item.name}
-                          </Link>
-                        ))}
+                        {(user ? navigation.private : navigation.public).map((item) => {
+                          const isActive = window.location.pathname === item.href;
+                          return (
+                            <Link
+                              key={item.name}
+                              to={item.href}
+                              onClick={onClose}
+                              className={cn(
+                                'block px-4 py-2 text-base font-medium',
+                                isActive
+                                  ? 'text-accent-500'
+                                  : 'text-gray-900 hover:text-accent-500',
+                                'transition-colors'
+                              )}
+                            >
+                              {item.name}
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    {/* Analysis Section */}
-                    <div>
-                      <div className="mb-2">
-                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Analysis Tools
-                        </h3>
-                      </div>
-                      <div className="space-y-1">
-                        {navigation.analysis.map((item) => (
-                          <Link
-                            key={item.name}
-                            to={item.href}
-                            onClick={onClose}
-                            className={cn(
-                              'block px-3 py-2 rounded-md text-base font-medium text-gray-900',
-                              'hover:bg-primary-50 hover:text-primary-600',
-                              'transition-colors duration-200'
-                            )}
-                          >
-                            {item.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Account Section (only for logged in users) */}
+                    {/* User Menu (only for logged in users) */}
                     {user && (
                       <div>
                         <div className="mb-2">
@@ -139,20 +103,25 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
                           </h3>
                         </div>
                         <div className="space-y-1">
-                          {navigation.account.map((item) => (
-                            <Link
-                              key={item.name}
-                              to={item.href}
-                              onClick={onClose}
-                              className={cn(
-                                'block px-3 py-2 rounded-md text-base font-medium text-gray-900',
-                                'hover:bg-primary-50 hover:text-primary-600',
-                                'transition-colors duration-200'
-                              )}
-                            >
-                              {item.name}
-                            </Link>
-                          ))}
+                          {navigation.userMenu.map((item) => {
+                            const isActive = window.location.pathname === item.href;
+                            return (
+                              <Link
+                                key={item.name}
+                                to={item.href}
+                                onClick={onClose}
+                                className={cn(
+                                  'block px-4 py-2 text-base font-medium',
+                                  isActive
+                                    ? 'text-accent-500'
+                                    : 'text-gray-900 hover:text-accent-500',
+                                  'transition-colors'
+                                )}
+                              >
+                                {item.name}
+                              </Link>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
