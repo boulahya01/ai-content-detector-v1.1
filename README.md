@@ -1,30 +1,20 @@
-tttttttttttttttttttttttttttttttttttt# 🔍 AI Content Detector v1.1.0
+# 🔍 AI Content Detector v1.1.0
 
-An advanced web application that helps you detect AI-generated content with high accuracy and real-time analysis. Features batch processing, comprehensive monitoring, and mu### Usage
+An advanced web application that helps you detect AI-generated content with high accuracy and real-time analysis.
 
-1. **Single File Analysis**
-   - Visit the homepage
-   - Enter text or upload a file (.txt, .docx, .pdf, .rtf)
-   - Get instant AI detection results with confidence scoring
-   - View detailed language analysis
+## 📸 Screenshots
 
-2. **Batch Processing**
-   - Upload multiple files (up to 10)
-   - Monitor real-time processing progresttttttttttttttttttttttttgs
-   - View batch analysis results
-   - Download consolidated reports
+### Home Page
+![Home Page](./screnshots-README/HOME.png)
+*Landing page with instant analysis capability*
 
-3. **System Monitoring**
-   - Access `/health` endpoint for system status
-   - View performance metrics at `/metrics`
-   - Monitor resource usage and system health
-   - Track error rates and response times
+### Login Page
+![Login Page](./screnshots-README/LOGIN.png)
+*Secure email & password authentication*
 
-4. **Premium Features** (requires login)
-   - Save analysis history
-   - Access advanced detection features
-   - Process larger files (up to 200,000 characters)
-   - Manage subscription plansdocument support.
+### Sign Up Page
+![Sign Up Page](./screnshots-README/SIGNUP.png)
+*Simple email registration process*
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
@@ -32,26 +22,54 @@ An advanced web application that helps you detect AI-generated content with high
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org/)
 
-##  Overview
+## 🚀 Latest Updates
 
-The AI Content Detector is a powerful web application that helps users identify AI-generated content. Key points:
+### New Features
+- **Enhanced UI/UX**
+  - Modern dark theme with accent colors
+  - Responsive design for all devices
+  - Improved navigation and layout
+- **Authentication System**
+  - Email & password authentication
+  - Secure JWT-based sessions
+  - Protected routes and content
+- **Real-time Analysis**
+  - Instant text analysis
+  - File upload support
+  - Batch processing capabilities
 
-1. **Public Access**: All core services are available to anonymous users
-2. **Instant Analysis**: Direct content analysis from the landing page
-3. **Optional Login**: Required only for premium features (history, subscriptions)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org/)
 
-## Features
+### Technical Improvements
+- **Frontend Architecture**
+  - New component structure
+  - Context-based state management
+  - TypeScript strict mode
+- **Backend Enhancements**
+  - Improved error handling
+  - Rate limiting
+  - Monitoring system
 
-### Core Features
+## 🛠 Core Features
+
+### Free Features
 - Real-time AI content detection
-- Batch processing support (up to 10 files)
-- Support for multiple file formats (.txt, .docx, .pdf, .rtf)
-- Interactive confidence scoring
-- User authentication and authorization
-- Usage tracking and subscription management
-- Responsive and modern UI with TailwindCSS
+- Text and file analysis
+- Basic report generation
+- Up to 2000 characters per analysis
 
-### Technical Features
+### Premium Features
+- Unlimited character count
+- Batch processing
+- Advanced analytics
+- API access
+- History tracking
+
+## 💻 Tech Stack
 - Comprehensive monitoring system
   - Real-time performance metrics
   - Health check endpoints
@@ -76,107 +94,38 @@ The AI Content Detector is a powerful web application that helps users identify 
 ##  Tech Stack
 
 ### Frontend
-- **React**: UI library
-- **TypeScript**: Type-safe development
-- **TailwindCSS**: Utility-first CSS
-- **Vite**: Build tool and dev server
+- **React 18** with TypeScript
+- **TailwindCSS** for styling
+- **Context API** for state management
+- **React Router v6** for navigation
 
 ### Backend
-- **FastAPI**: High-performance API framework
-- **Python 3.10+**: Core programming language
-- **pdfplumber**: PDF text extraction
-- **python-docx**: DOCX file processing
-- **langdetect**: Language detection
-- **tenacity**: Retry mechanisms
-- **aiofiles**: Async file operations
-- **prometheus-client**: Metrics collection
-- **python-magic**: File type detection
+- **FastAPI** framework
+- **PostgreSQL** with SQLAlchemy ORM
+- **JWT** token-based auth
+- **bcrypt** password hashing
+- **Prometheus** monitoring
 
-##  Project Structure
+## 📦 Project Structure
 
-### Root Directory
+Key directories and their purposes:
+
 ```
 📂 ai-content-detector/
- ├── 📄 .gitignore              # Git ignore rules
- ├── 📄 README.md               # Project documentation
- ├── 📄 .env.example            # Environment variables template
- ├── 📄 docker-compose.yml      # Docker services configuration
- ├── 📂 backend/                # Backend application
- └── 📂 frontend/               # Frontend application
-```
-
-### Backend (`/backend`)
-```
-📂 backend/
- ├── 📂 app/
- │   ├── 📄 main.py              # FastAPI application entry point
- │   ├── 📂 api/                 # API endpoints and route handlers
- │   │   └── 📄 analyze.py       # Content analysis endpoints
- │   ├── � models/              # Application models
- │   │   └── 📄 analyzer.py      # AI detection model
- │   └── 📂 utils/               # Utility modules
- │       ├── 📄 batch_processor.py     # Batch file processing
- │       ├── 📄 document_processor.py  # Document handling
- │       ├── 📄 exceptions.py          # Custom exceptions
- │       ├── 📄 language_detector.py   # Language detection
- │       ├── 📄 logging_config.py      # Logging setup
- │       ├── � monitoring.py          # System monitoring
- │       ├── 📄 rate_limiter.py        # Rate limiting
- │       └── 📄 validation.py          # Input validation
- ├── 📂 logs/                    # Application logs
- │   ├── 📄 debug.log           # Debug level logs
- │   ├── 📄 error.log          # Error level logs
- │   └── 📄 info.log           # Info level logs
- ├── 📂 metrics/                 # Monitoring metrics
- ├── 📂 tests/                   # Test suite
- │   ├── 📄 test_analyzer.py     # Analyzer tests
- │   ├── 📄 test_document_processor.py  # Document processing tests
- │   ├── 📄 test_monitoring.py   # Monitoring tests
- │   └── 📄 test_validation.py   # Validation tests
- └── 📄 requirements.txt         # Python dependencies
-```
-
-### Frontend (`/frontend`)
-```
-📂 frontend/
- ├── 📄 index.html              # Entry HTML file
- ├── 📄 package.json            # NPM dependencies and scripts
- ├── 📄 vite.config.ts          # Vite configuration
- ├── 📄 tsconfig.json           # TypeScript configuration
- ├── 📂 src/
- │   ├── 📄 main.tsx            # Application entry point
- │   ├── 📄 App.tsx             # Root component
- │   ├── 📂 api/                # API integration
- │   │   ├── 📄 analysis.ts     # Analysis service
- │   │   ├── 📄 auth.ts         # Auth service
- │   │   └── 📄 subscription.ts # Subscription service
- │   ├── 📂 components/         # Reusable components
- │   │   ├── 📂 features/       # Feature-specific components
- │   │   │   ├── 📂 analysis/   # Analysis components
- │   │   │   │   ├── 📄 AnalysisForm.tsx
- │   │   │   │   ├── 📄 AnalysisResults.tsx
- │   │   │   │   └── 📄 ConfidenceIndicator.tsx
- │   │   │   └── 📂 auth/       # Authentication components
- │   │   └── 📂 ui/             # UI components
- │   │       ├── 📄 Button.tsx
- │   │       ├── 📄 Card.tsx
- │   │       └── 📄 Input.tsx
- │   ├── 📂 context/            # React context providers
- │   │   ├── 📄 AuthContext.tsx
- │   │   └── 📄 AnalysisContext.tsx
- │   ├── 📂 hooks/              # Custom React hooks
- │   │   ├── 📄 useAuth.ts
- │   │   └── 📄 useAnalyzer.ts
- │   ├── 📂 pages/              # Route components
- │   │   ├── 📄 HomePage.tsx
- │   │   ├── 📄 AnalyzePage.tsx
- │   │   └── 📄 DashboardPage.tsx
- │   └── 📂 utils/              # Utility functions
- │       ├── 📄 api.ts          # API helpers
- │       └── 📄 validation.ts   # Form validation
- └── 📂 public/                 # Static assets
-     ├── 📂 images/
-     └── 📄 favicon.ico
+ ├── 📂 frontend/                # React application
+ │   ├── 📂 src/
+ │   │   ├── � components/     # Reusable UI components
+ │   │   ├── � context/        # React contexts
+ │   │   ├── 📂 hooks/          # Custom hooks
+ │   │   └── 📂 pages/          # Route components
+ │   └── � public/             # Static assets
+ │
+ └── � backend/                # FastAPI application
+     ├── 📂 app/
+     │   ├──  api/            # API endpoints
+     │   ├── 📂 models/         # Data models
+     │   └── 📂 utils/          # Utilities
+     └── � tests/              # Test suite
 ```
 
 ##  Getting Started
