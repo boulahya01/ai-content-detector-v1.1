@@ -1,8 +1,9 @@
 # 🔍 AI Content Detector v1.1.0
 
-An advanced web application that helps you detect AI-generated content with high accuracy and real-time analysis.
+A sophisticated web application powered by OpenAI's [RoBERTa-based model](https://huggingface.co/roberta-base-openai-detector) for real-time detection of AI-generated content with advanced analysis capabilities. Built with [PyTorch](https://pytorch.org/) and [🤗 Transformers](https://huggingface.co/docs/transformers/index) 
 
 ## 📸 Screenshots
+
 
 ### Home Page
 ![Home Page](./screnshots-README/HOME.png)
@@ -15,12 +16,6 @@ An advanced web application that helps you detect AI-generated content with high
 ### Sign Up Page
 ![Sign Up Page](./screnshots-README/SIGNUP.png)
 *Simple email registration process*
-
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org/)
 
 ## 🚀 Latest Updates
 
@@ -114,18 +109,18 @@ Key directories and their purposes:
 📂 ai-content-detector/
  ├── 📂 frontend/                # React application
  │   ├── 📂 src/
- │   │   ├── � components/     # Reusable UI components
- │   │   ├── � context/        # React contexts
+ │   │   ├── 📂 components/     # Reusable UI components
+ │   │   ├── 📂 context/        # React contexts
  │   │   ├── 📂 hooks/          # Custom hooks
  │   │   └── 📂 pages/          # Route components
- │   └── � public/             # Static assets
+ │   └── 📂 public/             # Static assets
  │
- └── � backend/                # FastAPI application
+ └── 📂 backend/                # FastAPI application
      ├── 📂 app/
      │   ├──  api/            # API endpoints
      │   ├── 📂 models/         # Data models
      │   └── 📂 utils/          # Utilities
-     └── � tests/              # Test suite
+     └── 📂 tests/              # Test suite
 ```
 
 ##  Getting Started
@@ -140,8 +135,8 @@ Key directories and their purposes:
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/ai-content-detector.git
-cd ai-content-detector
+git clone https://github.com/boulahya01/ai-content-detector-v1.1.git
+cd ai-content-detector-v1.1
 ```
 
 2. Backend Setup
