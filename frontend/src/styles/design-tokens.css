@@ -8,8 +8,11 @@
   --surface-500: rgba(255,255,255,0.05); /* card overlay */
   --text-100: #ffffff; /* primary text */
   --muted-300: rgba(255,255,255,0.7);
-  --accent-500: #0066ff; /* electric blue accent */
-  --accent-600: #0053d6;
+  --accent-200: #e2ccff; /* lightest purple */
+  --accent-300: #c385ff; /* light purple */
+  --accent-500: #a238ff; /* main vibrant purple */
+  --accent-600: #9431eb; /* slightly darker purple */
+  --accent-700: #862ad6; /* darker purple */
 
   /* Typography */
   --font-heading: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
@@ -69,7 +72,7 @@ h1, h2, h3, h4 {
 .btn:hover {
   transform: translateY(-2px);
   background-color: var(--accent-600);
-  box-shadow: 0 8px 28px rgba(0,102,255,0.16);
+  box-shadow: 0 8px 28px rgba(162,56,255,0.16);
 }
 
 /* Utility container */
@@ -89,5 +92,5 @@ h1, h2, h3, h4 {
 /* small accessibility focus ring */
 :focus {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(0,102,255,0.12);
+  box-shadow: 0 0 0 4px rgba(162,56,255,0.12);
 }

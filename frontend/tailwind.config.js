@@ -13,7 +13,12 @@ export default {
           foreground: '#000000',
         },
         accent: {
-          DEFAULT: '#FFFFFF',
+          DEFAULT: '#a238ff',
+          200: '#d1a4ff',
+          300: '#b75fff',
+          500: '#a238ff',
+          600: '#8a1ff0',
+          700: '#7215d0',
           foreground: '#000000',
         },
         background: '#000000',
