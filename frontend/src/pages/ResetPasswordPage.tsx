@@ -1,157 +1,179 @@
-import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { toast } from 'sonner';
+import { FiLock, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi';
+import { formStyles } from '@/components/auth/styles';
+import * as authApi from '@/api/auth';
 
 export default function ResetPasswordPage() {
-  const { resetPassword } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
   const [formData, setFormData] = useState({
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    if (!token) {
+      toast.error('Invalid or expired reset token');
+      navigate('/forgot-password');
+    }
+  }, [token, navigate]);
+
+  const validatePassword = (password: string) => {
+    const errors = [];
+    if (password.length < 8) errors.push('At least 8 characters');
+    if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
+    if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
+    if (!/[0-9]/.test(password)) errors.push('One number');
+    if (!/[^A-Za-z0-9]/.test(password)) errors.push('One special character');
+    return errors;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-
+    
+    // Validate passwords
+    const newErrors: { [key: string]: string } = {};
+    const passwordErrors = validatePassword(formData.password);
+    
+    if (passwordErrors.length > 0) {
+      newErrors.password = `Password must contain: ${passwordErrors.join(', ')}`;
+    }
+    
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (!token) {
-      setError('Invalid reset token');
-      return;
-    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
-    setIsSubmitting(true);
-
+    setIsLoading(true);
     try {
-      await resetPassword(token, formData.password);
-      // Redirect to login with success message
-      navigate('/login?reset=success');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      await authApi.resetPassword(token!, formData.password);
+      toast.success('Password has been reset successfully');
+      navigate('/login');
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Failed to reset password');
+      }
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  if (!token) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md p-8 text-center">
-          <svg
-            className="mx-auto h-12 w-12 text-red-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-          <h3 className="mt-4 text-xl font-semibold text-gray-900">
-            Invalid Reset Link
-          </h3>
-          <p className="mt-2 text-gray-600">
-            The password reset link is invalid or has expired.
-          </p>
-          <div className="mt-6">
-            <Button
-              type="button"
-              onClick={() => navigate('/forgot-password')}
-            >
-              Request New Reset Link
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  if (!token) return null;
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Reset your password
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Enter your new password below
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              New Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-              required
-              className="mt-1"
-              placeholder="Enter your new password"
-              minLength={8}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Must be at least 8 characters long
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <div className="space-y-6 rounded-xl border border-white/10 bg-white/5 p-7 shadow-sm backdrop-blur-sm">
+          <div className="text-center">
+            <h2 className="text-4xl font-bold text-white/90 mb-3">Reset Password</h2>
+            <p className="text-white/60">
+              Please enter your new password
             </p>
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-              Confirm New Password
-            </label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={e => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-              required
-              className="mt-1"
-              placeholder="Confirm your new password"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div className="form-group">
+                <div className="relative">
+                  <FiLock className={formStyles.inputIcon} />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`${formStyles.input} ${errors.password ? '!border-red-500' : ''}`}
+                    placeholder="New Password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                  </button>
+                  {errors.password && (
+                    <p className={formStyles.errorText}>{errors.password}</p>
+                  )}
+                </div>
+              </div>
 
-          {error && (
-            <div className="text-sm text-red-600">
-              {error}
+              <div className="form-group">
+                <div className="relative">
+                  <FiLock className={formStyles.inputIcon} />
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={`${formStyles.input} ${errors.confirmPassword ? '!border-red-500' : ''}`}
+                    placeholder="Confirm New Password"
+                  />
+                  {errors.confirmPassword && (
+                    <p className={formStyles.errorText}>{errors.confirmPassword}</p>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
 
-          <Button
-            type="submit"
-            className="w-full"
-            isLoading={isSubmitting}
-          >
-            Reset Password
-          </Button>
-
-          <div className="text-sm text-center">
-            <a
-              href="/login"
-              className="text-primary-600 hover:text-primary-500 font-medium"
+            <button
+              type="submit"
+              disabled={isLoading || !formData.password || !formData.confirmPassword}
+              className={formStyles.button}
+              style={{ background: 'linear-gradient(90deg, var(--accent-500), var(--accent-600))' }}
             >
-              Back to login
-            </a>
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
+                  Resetting Password...
+                </div>
+              ) : (
+                'Reset Password'
+              )}
+            </button>
+          </form>
+
+          <div className="flex items-center justify-center gap-2">
+            <Link 
+              to="/login" 
+              className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white/90 transition-colors"
+            >
+              <FiArrowLeft className="w-4 h-4" />
+              Back to Login
+            </Link>
           </div>
-        </form>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

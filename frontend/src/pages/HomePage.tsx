@@ -63,7 +63,7 @@ export default function HomePage(): JSX.Element {
               setValue(val);
             }}
             className="w-full rounded-xl p-4 min-h-[12rem] leading-relaxed resize-vertical
-              transition-all focus:ring-2 focus:ring-accent-500 bg-[color:var(--surface-500)] text-[color:var(--text-100)] placeholder-white/50
+              transition-all focus:ring-2 focus:ring-accent-300 bg-[color:var(--surface-500)] text-[color:var(--text-100)] placeholder-white/50
               border border-white/10 shadow-lg hover:shadow-xl"
             placeholder="Paste your text here"
             aria-label="Text to analyze"
@@ -77,8 +77,8 @@ export default function HomePage(): JSX.Element {
             <button
               onClick={onAnalyze}
               disabled={!text.trim()}
-              className="btn rounded-full px-8 py-3 text-lg font-bold shadow-md animate-pulse focus:ring-2 focus:ring-accent-500"
-              style={{ background: 'linear-gradient(90deg, var(--accent-500), var(--accent-600))' }}
+              className="btn rounded-full px-8 py-3 text-lg font-bold shadow-md animate-pulse focus:ring-2 focus:ring-accent-300 hover:bg-accent-600 transition-colors"
+              style={{ background: 'var(--accent-500)' }}
             >
               Analyze
             </button>
@@ -95,8 +95,8 @@ export default function HomePage(): JSX.Element {
           <div className="flex justify-center">
             <button
               onClick={() => navigate('/register')}
-              className="btn rounded-full px-8 py-3 text-lg font-bold shadow-md focus:ring-2 focus:ring-accent-500"
-              style={{ background: 'linear-gradient(90deg, var(--accent-500), var(--accent-600))' }}
+              className="btn rounded-full px-8 py-3 text-lg font-bold shadow-md focus:ring-2 focus:ring-accent-300 hover:bg-accent-600 transition-colors"
+              style={{ background: 'var(--accent-500)' }}
             >
               Get started
             </button>

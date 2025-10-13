@@ -61,14 +61,14 @@ export default function PricingPage() {
   const { updateSubscription } = useSubscription();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16">
+    <div className="min-h-screen bg-black py-16">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-white/90 mb-4">
             Choose Your Plan
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-white/60 max-w-2xl mx-auto">
             Get accurate AI content detection with our flexible pricing plans.
             Scale as you grow.
           </p>
@@ -95,33 +95,33 @@ export default function PricingPage() {
 
         {/* FAQ Section */}
         <div className="mt-24 max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          <h2 className="text-3xl font-bold text-center text-white/90 mb-12">
             Frequently Asked Questions
           </h2>
           <div className="space-y-8">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-white/90 mb-2">
                 What are credits?
               </h3>
-              <p className="text-gray-600">
+              <p className="text-white/60">
                 Credits are used for each analysis you perform. One credit equals
                 one analysis of up to the word limit for your plan.
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-white/90 mb-2">
                 Do credits roll over?
               </h3>
-              <p className="text-gray-600">
+              <p className="text-white/60">
                 Credits reset monthly and do not roll over to the next month. Make
                 the most of your credits within your billing cycle.
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-white/90 mb-2">
                 Can I upgrade anytime?
               </h3>
-              <p className="text-gray-600">
+              <p className="text-white/60">
                 Yes! You can upgrade your plan at any time. The new features and
                 credits will be available immediately.
               </p>
