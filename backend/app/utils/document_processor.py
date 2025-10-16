@@ -23,6 +23,23 @@ class FileTypeError(DocumentValidationError):
     pass
 
 class DocumentProcessor:
+    def process_document_bytes(self, file_content: bytes, mime_type: str) -> Dict[str, Union[str, Dict]]:
+        """Process document from bytes and mime type (for API uploads)."""
+        format_id = self.get_format_from_mime(mime_type)
+        if format_id == 'docx':
+            return DocumentProcessor.extract_text_from_docx(file_content)
+        elif format_id == 'pdf':
+            return DocumentProcessor.extract_text_from_pdf(file_content)
+        elif format_id == 'txt':
+            text = file_content.decode('utf-8')
+            return {
+                "text": text,
+                "metadata": {
+                    "format": "txt",
+                    "words": len(text.split())
+                }
+            }
+        raise ValueError(f"Unsupported format: {format_id}")
     """Handles processing of various document formats."""
     
     SUPPORTED_FORMATS = {
@@ -359,4 +376,28 @@ class DocumentProcessor:
                 }
             }
         
+        raise ValueError(f"Unsupported format: {format_id}")
+
+    def process_document_bytes(self, content: bytes, content_type: str) -> Dict[str, Union[str, Dict]]:
+        """Process document given as bytes and a declared content type.
+
+        This is intended for in-memory uploads where a file path is not available.
+        """
+        # Validate declared MIME type
+        mime_type = content_type
+        if not DocumentProcessor.is_supported_format(mime_type):
+            raise FileTypeError(f"Unsupported file type: {mime_type}")
+
+        format_id = self.get_format_from_mime(mime_type)
+        if format_id == 'docx':
+            return DocumentProcessor.extract_text_from_docx(content)
+        elif format_id == 'pdf':
+            return DocumentProcessor.extract_text_from_pdf(content)
+        elif format_id == 'txt':
+            text = content.decode('utf-8')
+            return {
+                "text": text,
+                "metadata": {"format": "txt", "words": len(text.split())}
+            }
+
         raise ValueError(f"Unsupported format: {format_id}")

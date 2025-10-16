@@ -36,6 +36,25 @@ html, body, #root {
   font-family: var(--font-body);
 }
 
+/* Global scrollbar styles */
+.auth-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.auth-container::-webkit-scrollbar {
+  display: none;
+}
+
+.auth-container * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.auth-container *::-webkit-scrollbar {
+  display: none;
+}
+
 /* Headings */
 h1, h2, h3, h4 {
   font-family: var(--font-heading);

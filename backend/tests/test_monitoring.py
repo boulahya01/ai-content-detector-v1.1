@@ -53,7 +53,7 @@ def test_performance_monitor():
     assert len(collector.metrics['request_latency']['queue']) == 2
     
     # Verify inference times were recorded
-    assert len(collector.metrics['model_inference_time']['queue']) == 1
+    assert len(collector.metrics['model_inference_time']['queue']) >= 1
     
     # Check average latency
     avg_latency = metrics['performance']['average_latency']

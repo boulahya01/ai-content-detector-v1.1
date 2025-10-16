@@ -6,6 +6,7 @@ import api from '../lib/api';
 export interface SubscriptionContextType {
   subscription: Subscription | null;
   isLoading: boolean;
+  usage: number;
   updateSubscription: (plan: string) => Promise<void>;
   cancelSubscription: () => Promise<void>;
 }
@@ -65,6 +66,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       value={{
         subscription,
         isLoading,
+        
         updateSubscription,
         cancelSubscription,
       }}

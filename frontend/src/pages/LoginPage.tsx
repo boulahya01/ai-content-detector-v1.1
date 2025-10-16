@@ -14,7 +14,7 @@ export default function LoginPage() {
   }, [user, navigate]);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen auth-container">
       {/* Left Side - Welcome Message */}
       <div className="hidden w-1/2 p-12 lg:flex items-center justify-center">
         <div className="max-w-xl">

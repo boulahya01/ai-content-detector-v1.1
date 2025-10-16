@@ -24,23 +24,46 @@ def reset_database():
     db = SessionLocal()
     
     try:
-        # Create test user
-        test_user = User(
-            email="test123@gmail.com",
-            password_hash=get_password_hash("Test123!"),
-            first_name="Test",
-            last_name="User",
-            role=UserRole.FREE,
-            is_active=True,
-            credits=5,
-            requests_count=0
-        )
-        db.add(test_user)
+        # Create a default admin user and a regular test user
+        admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
+        admin_password = os.environ.get('ADMIN_PASSWORD', 'Admin123!')
+
+        existing_admin = db.query(User).filter(User.email == admin_email).first()
+        if not existing_admin:
+            admin_user = User(
+                email=admin_email,
+                password_hash=get_password_hash(admin_password),
+                first_name="Admin",
+                last_name="User",
+                role=UserRole.ADMIN,
+                is_active=True,
+                credits=0,
+                requests_count=0
+            )
+            db.add(admin_user)
+            print(f"Admin user {admin_email} queued for creation")
+
+        # Create a regular test user as before
+        test_email = 'test123@gmail.com'
+        if not db.query(User).filter(User.email == test_email).first():
+            test_user = User(
+                email=test_email,
+                password_hash=get_password_hash("Test123!"),
+                first_name="Test",
+                last_name="User",
+                role=UserRole.FREE,
+                is_active=True,
+                credits=5,
+                requests_count=0
+            )
+            db.add(test_user)
+            print("Test user queued for creation")
+
         db.commit()
-        print("Test user created successfully!")
-        
+        print("Database users created/verified successfully!")
+
     except Exception as e:
-        print(f"Error creating test user: {e}")
+        print(f"Error creating users: {e}")
         db.rollback()
     finally:
         db.close()

@@ -61,25 +61,24 @@ export default function PricingPage() {
   const { updateSubscription } = useSubscription();
 
   return (
-    <div className="min-h-screen bg-black py-16">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-white/90 mb-4">
-            Choose Your Plan
-          </h1>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto">
-            Get accurate AI content detection with our flexible pricing plans.
-            Scale as you grow.
-          </p>
-        </div>
+    <div className="min-h-screen w-full py-16">
+      {/* Header Section - Centered Title */}
+      <div className="text-center mb-16">
+        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+          Choose Your Plan
+        </h1>
+        <p className="text-lg text-white/80 max-w-2xl mx-auto">
+          Get accurate AI content detection with our flexible pricing plans
+        </p>
+      </div>
 
-        {/* Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
+      {/* Plans Section - Three cards in ONE row */}
+      <div className="w-full px-8">
+        <div className="flex flex-row justify-center items-stretch gap-12 mb-24">
           {plans.map((plan) => (
             <div
               key={plan.title}
-              className={plan.isPopular ? 'md:-mt-4' : ''}
+              className="w-1/3 max-w-xl"
             >
               <PlanCard
                 {...plan}
@@ -94,34 +93,34 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-24 max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-white/90 mb-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-white text-center mb-12">
             Frequently Asked Questions
           </h2>
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-white/90 mb-2">
+          <div className="grid gap-6">
+            <div className="border-b border-white/10 pb-6">
+              <h3 className="text-lg font-medium text-white">
                 What are credits?
               </h3>
-              <p className="text-white/60">
+              <p className="mt-2 text-white/70">
                 Credits are used for each analysis you perform. One credit equals
                 one analysis of up to the word limit for your plan.
               </p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white/90 mb-2">
+            <div className="border-b border-white/10 pb-6">
+              <h3 className="text-lg font-medium text-white">
                 Do credits roll over?
               </h3>
-              <p className="text-white/60">
+              <p className="mt-2 text-white/70">
                 Credits reset monthly and do not roll over to the next month. Make
                 the most of your credits within your billing cycle.
               </p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white/90 mb-2">
+            <div className="border-b border-white/10 pb-6">
+              <h3 className="text-lg font-medium text-white">
                 Can I upgrade anytime?
               </h3>
-              <p className="text-white/60">
+              <p className="mt-2 text-white/70">
                 Yes! You can upgrade your plan at any time. The new features and
                 credits will be available immediately.
               </p>

@@ -34,48 +34,49 @@ export default function PlanCard({
 }: PlanCardProps) {
   return (
     <div className={cn(
-      'relative rounded-2xl border p-8 transition-all duration-200',
-      'hover:border-blue-500 hover:shadow-lg',
-      isPopular && 'border-blue-500 shadow-xl',
+      'relative rounded-lg border p-6',
+      isPopular 
+        ? 'bg-black/40 border-accent-500' 
+        : 'bg-black/20 border-white/10',
       comingSoon && 'opacity-75'
     )}>
       {isPopular && (
-        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-accent-500/90 text-white">
             Most Popular
           </span>
         </div>
       )}
 
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
+        <h3 className="text-xl font-semibold text-white">{title}</h3>
         {description && (
-          <p className="mt-2 text-gray-600">{description}</p>
+          <p className="mt-2 text-sm text-white/70">{description}</p>
         )}
         <div className="mt-4 flex items-baseline justify-center">
-          <span className="text-5xl font-extrabold tracking-tight text-gray-900">{price}</span>
+          <span className="text-4xl font-bold text-white">{price}</span>
           {period && (
-            <span className="ml-1 text-xl font-semibold text-gray-500">/{period}</span>
+            <span className="ml-1 text-lg text-white/70">/{period}</span>
           )}
         </div>
       </div>
 
       {creditsPerMonth && (
-        <div className="mt-6">
+        <div className="mt-6 pb-6 border-b border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-900">Monthly Credits</span>
-            <span className="text-2xl font-bold text-blue-600">{creditsPerMonth}</span>
+            <span className="text-sm font-medium text-white/90">Monthly Credits</span>
+            <span className="text-xl font-semibold text-accent-500">{creditsPerMonth}</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-white/10 rounded-full h-1.5">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              className="bg-accent-500 h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${(creditsPerMonth / 1000) * 100}%` }}
             />
           </div>
         </div>
       )}
 
-      <ul className="mt-8 space-y-4">
+      <ul className="mt-6 space-y-3">
         {features.map((feature, index) => (
           <li
             key={index}
@@ -83,14 +84,16 @@ export default function PlanCard({
             title={feature.tooltip}
           >
             <span className={cn(
-              'flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mr-3',
-              feature.included ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+              'flex-shrink-0 w-5 h-5 flex items-center justify-center mr-2',
+              feature.included ? 'text-accent-500' : 'text-white/30'
             )}>
-              {feature.included ? '✓' : '×'}
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+              </svg>
             </span>
             <span className={cn(
-              'text-base',
-              feature.included ? 'text-gray-900' : 'text-gray-500 line-through'
+              'text-sm',
+              feature.included ? 'text-white/90' : 'text-white/40 line-through'
             )}>
               {feature.name}
             </span>
@@ -100,8 +103,9 @@ export default function PlanCard({
 
       <Button
         className={cn(
-          'w-full mt-8',
-          isPopular && 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
+          'w-full mt-6',
+          isPopular ? 'bg-accent-500 hover:bg-accent-600' : 'bg-white/10 hover:bg-white/20',
+          'text-white font-medium'
         )}
         disabled={comingSoon}
         onClick={onSelect}

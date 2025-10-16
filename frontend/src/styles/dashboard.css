@@ -1,0 +1,68 @@
+:root {
+  --bg-page: #121415 !important; /* dashboard background (exact, forced) */
+  --card-surface: #000000; /* cards must be pure black */
+  --card-border: rgba(255,255,255,0.06);
+  --muted: #94a3b8;
+  --chart-color: #5e17eb ; /* exact chart color */
+  --text-color: #ffffff; /* exact text color */
+  --positive: #10b981;
+  --negative: #ef4444;
+}
+
+.dashboard-card {
+  background: var(--card-surface); /* pure black */
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(15,23,36,0.18);
+  transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
+}
+
+
+.card-control {
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  padding: 7px 12px;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: background 0.2s, color 0.2s;
+}
+.card-control:hover, .card-control:focus {
+  background: var(--accent-1);
+  color: #fff;
+}
+
+.text-accent-1 { color: var(--accent-1); }
+.text-accent-2 { color: var(--accent-2); }
+.text-accent-3 { color: var(--chart-color); }
+.text-positive { color: var(--positive); }
+.text-negative { color: var(--negative); }
+.text-muted { color: rgba(255,255,255,0.7); }
+
+/* force dashboard page background and default text color */
+html, body, #root {
+  background: var(--bg-page) !important;
+  color: var(--text-color) !important;
+}
+
+/* force dashboard card text color */
+.dashboard-card, .dashboard-card * {
+  color: var(--text-color) !important;
+}
+
+.date-pill {
+  background: var(--card-surface);
+  color: var(--accent-2);
+  border-radius: 999px;
+  padding: 0.5em 1.2em;
+  font-weight: 500;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(139,92,246,0.08);
+  border: 1px solid var(--accent-2);
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+}
+.date-pill:focus, .date-pill:hover {
+  background: var(--accent-2);
+  color: #fff;
+  border-color: var(--accent-2);
+}

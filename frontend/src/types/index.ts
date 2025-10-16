@@ -6,7 +6,8 @@ export type User = {
   id: string;
   email: string;
   name: string;
-  avatarUrl: string;
+  avatarUrl?: string;
+  credits: number;
   createdAt: string;
   emailVerified: boolean;
   role: 'user' | 'admin';

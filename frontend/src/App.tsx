@@ -2,11 +2,14 @@ import { Suspense, lazy } from 'react';
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import RouteError from '@/components/RouteError';
 import { Layout } from '@/components/Layout';
 import { PrivateRoute } from '@/components/PrivateRoute';
 import { AuthProvider } from '@/context/AuthContext';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import AnalysisProvider from '@/context/AnalysisContext';
+import { AnalyticsProvider } from '@/context/AnalyticsContext';
+import { ShobeisProvider } from '@/context/ShobeisContext';
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('@/pages/HomePage'));
@@ -27,6 +30,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const ApiKeysPage = lazy(() => import('@/pages/ApiKeysPage'));
 const AnalyzeProPage = lazy(() => import('@/pages/AnalyzeProPage'));
+const ShobeisPage = lazy(() => import('@/pages/ShobeisPage'));
 
 // Loading component for lazy-loaded pages
 const LoadingSpinner = () => (
@@ -48,7 +52,11 @@ function App() {
           <AuthProvider>
             <SubscriptionProvider>
               <AnalysisProvider>
-                <Layout />
+                <AnalyticsProvider>
+                  <ShobeisProvider>
+                    <Layout />
+                  </ShobeisProvider>
+                </AnalyticsProvider>
               </AnalysisProvider>
             </SubscriptionProvider>
           </AuthProvider>
@@ -111,7 +119,8 @@ function App() {
           // Protected routes - require authentication
           { 
             path: 'dashboard', 
-            element: <PrivateRoute><DashboardPage /></PrivateRoute>
+            element: <PrivateRoute><DashboardPage /></PrivateRoute>,
+            errorElement: <RouteError />
           },
           {
             path: 'profile',
@@ -134,6 +143,10 @@ function App() {
           { 
             path: 'billing', 
             element: <PrivateRoute requireVerified><BillingPage /></PrivateRoute>
+          },
+          {
+            path: 'shobeis',
+            element: <PrivateRoute requireVerified><ShobeisPage /></PrivateRoute>
           },
           {
             path: 'api-keys',

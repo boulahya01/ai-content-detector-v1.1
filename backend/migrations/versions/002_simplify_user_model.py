@@ -10,28 +10,37 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic
-revision = '002'
+revision = '002_simplify_user_model'
 down_revision = '001_update_user_schema'
 branch_labels = None
 depends_on = None
 
 def upgrade():
-    # Drop unused columns
-    op.drop_column('users', 'email_verified')
-    op.drop_column('users', 'email_verified_at')
-    op.drop_column('users', 'requests_count')
-    op.drop_column('users', 'daily_requests')
-    
-    # Set default values for existing columns
-    op.alter_column('users', 'is_active',
-        existing_type=sa.BOOLEAN(),
-        server_default=sa.text('true'),
-        nullable=False)
-    
-    op.alter_column('users', 'credits',
-        existing_type=sa.INTEGER(),
-        server_default=sa.text('5'),
-        nullable=False)
+    # Use PRAGMA to inspect existing columns and only operate on present ones
+    conn = op.get_bind()
+    existing_cols = set()
+    if conn is not None:
+        res = conn.execute(sa.text("PRAGMA table_info('users')"))
+        existing_cols = {r[1] for r in res.fetchall()}
+
+    with op.batch_alter_table('users') as batch_op:
+        # Drop unused columns if present
+        for col in ('email_verified', 'email_verified_at', 'requests_count', 'daily_requests'):
+            if col in existing_cols:
+                batch_op.drop_column(col)
+
+        # Ensure defaults and non-null constraints are applied safely if columns exist
+        if 'is_active' in existing_cols:
+            batch_op.alter_column('is_active',
+                existing_type=sa.BOOLEAN(),
+                server_default=sa.text('true'),
+                nullable=False)
+
+        if 'credits' in existing_cols:
+            batch_op.alter_column('credits',
+                existing_type=sa.INTEGER(),
+                server_default=sa.text('5'),
+                nullable=False)
 
     # Drop any existing sessions or password reset tables if they exist
     op.execute('DROP TABLE IF EXISTS sessions')

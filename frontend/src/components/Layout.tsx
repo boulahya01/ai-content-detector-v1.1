@@ -17,6 +17,32 @@ const navigation = {
     { name: 'Analyze', href: '/analyze' },
     { name: 'History', href: '/history' },
   ],
+  account: [
+    { 
+      name: 'Profile',
+      href: '/profile',
+      description: 'View and edit your profile',
+      icon: 'user'
+    },
+    {
+      name: 'Settings',
+      href: '/settings',
+      description: 'Manage your preferences',
+      icon: 'settings'
+    },
+    {
+      name: 'API Keys',
+      href: '/api-keys',
+      description: 'Manage your API keys',
+      icon: 'key'
+    },
+    {
+      name: 'Billing',
+      href: '/billing',
+      description: 'Manage your subscription',
+      icon: 'credit-card'
+    },
+  ],
   userMenu: [
     { name: 'Profile', href: '/profile' },
     { name: 'Settings', href: '/settings' },
@@ -84,7 +110,7 @@ export function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white overflow-hidden" style={{ background: 'var(--bg-page)' }}>
       {/* Navigation */}
             {/* Navigation */}
       <nav className="bg-black fixed w-full top-0 z-50">
@@ -154,8 +180,8 @@ export function Layout() {
                 <div className="flex items-center space-x-4">
                   {/* Credits Badge */}
                   <div className="hidden md:flex items-center">
-                    <div className="px-3 py-1 rounded-full text-sm text-white/70">
-                      {user.credits || 0} Credits
+                    <div className="px-3 py-1.5 rounded-lg bg-accent-500/10 border border-accent-500/20 text-sm font-medium text-accent-300">
+                      {user?.credits || 0} Credits
                     </div>
                   </div>
 
@@ -166,8 +192,8 @@ export function Layout() {
                               text-sm font-medium rounded-lg
                               bg-accent-500 text-white
                               hover:bg-accent-600
-                              focus:outline-none
-                              transition-colors"
+                              focus:outline-none focus:ring-2 focus:ring-accent-500/50
+                              transition-all"
                   >
                     <svg className="w-4 h-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -215,8 +241,28 @@ export function Layout() {
                             className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-accent-200/10 hover:text-accent-500"
                             title={item.description}
                           >
-                            <span className="w-4 h-4 mr-3 text-gray-400 group-hover:text-primary-500">
-                              {/* Icon component based on item.icon */}
+                            <span className="w-4 h-4 mr-3 text-gray-400 group-hover:text-accent-500">
+                              {item.icon === 'user' && (
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              {item.icon === 'settings' && (
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              {item.icon === 'key' && (
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              {item.icon === 'credit-card' && (
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                                  <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                                </svg>
+                              )}
                             </span>
                             {item.name}
                           </Link>
@@ -469,7 +515,7 @@ export function Layout() {
               {/* Copyright */}
               <div className="text-right">
                 <p className="text-white/40 text-sm">
-                  © {new Date().getFullYear()} AI Content Detector
+                  © {new Date().getFullYear()} THE AI Detector
                 </p>
               </div>
             </div>

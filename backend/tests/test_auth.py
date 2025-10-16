@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from fastapi.testclient import TestClient
 from app.main import app
 from app.utils.database import init_db
@@ -13,11 +14,11 @@ def setup_db():
 
 
 def test_register_login_and_me_flow():
-    email = "pytest_user@example.com"
+    email = f"pytest_user_{uuid.uuid4().hex[:8]}@example.com"
     password = "Test123!"
 
     # Register
-    r = client.post("/api/auth/register", json={"email": email, "password": password})
+    r = client.post("/api/auth/register", json={"email": email, "password": password, "full_name": "Pytest User"})
     assert r.status_code == 200
     data = r.json()
     assert data["email"] == email
@@ -37,10 +38,10 @@ def test_register_login_and_me_flow():
 
 
 def test_register_duplicate():
-    email = "dup_user@example.com"
+    email = f"dup_user_{uuid.uuid4().hex[:8]}@example.com"
     password = "Test123!"
 
-    r1 = client.post("/api/auth/register", json={"email": email, "password": password})
+    r1 = client.post("/api/auth/register", json={"email": email, "password": password, "full_name": "Dup User"})
     assert r1.status_code == 200
 
     r2 = client.post("/api/auth/register", json={"email": email, "password": password})

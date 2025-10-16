@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+import uuid
 
 from ..models.user import User, UserRole
 from ..utils.database import get_db
@@ -28,6 +29,8 @@ from ..models.user import UserRole
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    # Accept either full_name or separate first_name/last_name
+    full_name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 
@@ -48,18 +51,20 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: str
     email: str
-    first_name: Optional[str]
-    last_name: Optional[str]
-    role: UserRole
-    is_active: bool
-    credits: int
-    requests_count: int
-    created_at: datetime
-    updated_at: Optional[datetime]
-    last_login: Optional[datetime]
+    role: UserRole = UserRole.FREE
+    full_name: str
+    subscription_tier: str = "free"
+    is_active: bool = True
+    shobeis_balance: int = 0
 
     class Config:
         orm_mode = True
+        
+    @validator('full_name', pre=True)
+    def set_full_name(cls, v, values):
+        if hasattr(v, '__call__'):  # if it's a method
+            return v()
+        return v or values.get('email', '')
 
 class Token(BaseModel):
     access_token: str
@@ -80,21 +85,33 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
-    # Create new user with updated schema
+    # Determine first and last name from provided fields
+    first_name = user_data.first_name
+    last_name = user_data.last_name
+    if user_data.full_name and (not first_name and not last_name):
+        parts = user_data.full_name.strip().split()
+        if parts:
+            first_name = parts[0]
+            last_name = ' '.join(parts[1:]) if len(parts) > 1 else None
+
+    # Create new user with minimal schema
     user = User(
+        id=str(uuid.uuid4()),
         email=user_data.email,
-        first_name=user_data.first_name,
-        last_name=user_data.last_name,
         password_hash=get_password_hash(user_data.password),
         role=UserRole.FREE,
+        subscription_tier="free",
         is_active=True,
-        credits=5,  # Default free credits
-        requests_count=0  # Initial request count
+        shobeis_balance=50,  # Default free balance
+        first_name=first_name,
+        last_name=last_name
     )
     db.add(user)
     try:
         db.commit()
         db.refresh(user)
+        # Set the full_name using the method directly
+        setattr(user, "full_name", user.full_name())
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -121,7 +138,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    if not verify_password(form_data.password, user.password_hash):
+    if not user.password_hash or not verify_password(form_data.password, str(user.password_hash)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect password",
@@ -132,6 +149,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     user.last_login = datetime.utcnow()
     db.commit()
     db.refresh(user)
+    # ensure full_name is available as an attribute for Pydantic serialization
+    try:
+        setattr(user, "full_name", user.full_name())
+    except Exception:
+        pass
     
     # Generate token (ensure sub is a string)
     access_token = create_access_token(data={"sub": str(user.id)})
@@ -167,6 +189,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
             detail="User not found"
         )
     return user
+
+async def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """Get current user and verify they have admin privileges."""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
+    return current_user
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):

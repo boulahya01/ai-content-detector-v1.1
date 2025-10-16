@@ -33,12 +33,6 @@ A sophisticated web application powered by OpenAI's [RoBERTa-based model](https:
   - File upload support
   - Batch processing capabilities
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org/)
-
 ### Technical Improvements
 - **Frontend Architecture**
   - New component structure
@@ -65,6 +59,15 @@ A sophisticated web application powered by OpenAI's [RoBERTa-based model](https:
 - History tracking
 
 ## 💻 Tech Stack
+
+### Core Technologies
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org/)
+
+### System Features
 - Comprehensive monitoring system
   - Real-time performance metrics
   - Health check endpoints
@@ -85,8 +88,6 @@ A sophisticated web application powered by OpenAI's [RoBERTa-based model](https:
   - Concurrent batch operations
   - Resource usage monitoring
   - Rate limiting
-
-##  Tech Stack
 
 ### Frontend
 - **React 18** with TypeScript
@@ -177,7 +178,7 @@ Copy `frontend/.env.example` to `frontend/.env` and configure:
    - Set rate limits in `utils/rate_limiter.py`
    - Review CORS settings in `main.py` if needed
 
-4. Frontend Setup
+5. Frontend Setup
 ```bash
 cd frontend
 npm install  # or yarn install
@@ -198,7 +199,7 @@ alembic upgrade head
 uvicorn app.main:app --reload --port 8000 --log-config utils/logging_config.py
 ```
 
-2. Access Monitoring
+3. Access Monitoring
    - Health check: `http://localhost:8000/health`
    - Metrics: `http://localhost:8000/metrics`
    - Logs: Check `backend/logs/` directory

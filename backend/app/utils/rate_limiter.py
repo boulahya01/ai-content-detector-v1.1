@@ -1,86 +1,238 @@
-"""Rate limiting implementation."""
-from typing import Dict, Tuple
+"""Rate limiting implementation with subscription-based limits and Redis backend."""
+from typing import Dict, Tuple, Optional
 import time
 from collections import defaultdict
 from .exceptions import RateLimitError
+import redis
+import json
+from datetime import datetime, timedelta
 
 class RateLimiter:
-    """Rate limiter using token bucket algorithm."""
+    """Rate limiter using token bucket algorithm with Redis backend."""
     
-    def __init__(self, requests_per_minute: int = 60, burst_size: int = 10):
-        """Initialize rate limiter.
+    def __init__(self, redis_url: str = "redis://localhost:6379/0"):
+        """Initialize rate limiter with Redis backend.
         
         Args:
-            requests_per_minute: Number of requests allowed per minute.
-            burst_size: Maximum number of requests allowed in burst.
+            redis_url: Redis connection URL
         """
-        self.rate = requests_per_minute / 60.0  # tokens per second
-        self.burst_size = burst_size
-        self.tokens: Dict[str, float] = defaultdict(float)
-        self.last_time: Dict[str, float] = defaultdict(float)
+        self.redis = redis.from_url(redis_url)
+        
+        # Plan-based rate limits
+        self.plan_limits = {
+            'free': {
+                'rate': 30/60.0,  # 30 requests per minute
+                'burst': 5,
+                'daily_limit': 1000
+            },
+            'basic': {
+                'rate': 60/60.0,  # 60 requests per minute
+                'burst': 10,
+                'daily_limit': 5000
+            },
+            'pro': {
+                'rate': 120/60.0,  # 120 requests per minute
+                'burst': 20,
+                'daily_limit': 20000
+            },
+            'enterprise': {
+                'rate': 240/60.0,  # 240 requests per minute
+                'burst': 40,
+                'daily_limit': 50000
+            }
+        }
     
-    def _update_tokens(self, key: str) -> None:
+    def _get_token_key(self, key: str) -> str:
+        """Generate Redis key for token bucket."""
+        return f"rate_limit:tokens:{key}"
+        
+    def _get_time_key(self, key: str) -> str:
+        """Generate Redis key for last update time."""
+        return f"rate_limit:time:{key}"
+        
+    def _get_daily_key(self, key: str) -> str:
+        """Generate Redis key for daily counter."""
+        return f"rate_limit:daily:{key}:{datetime.utcnow().strftime('%Y-%m-%d')}"
+    
+    def _update_tokens(self, key: str, plan: str) -> Tuple[float, float]:
         """Update token count for a key.
         
         Args:
-            key: Rate limit key (e.g., IP address).
+            key: Rate limit key (e.g., user ID)
+            plan: Subscription plan name
+            
+        Returns:
+            Tuple of (current_tokens, last_update_time)
         """
         now = time.time()
-        time_passed = now - self.last_time[key]
-        self.tokens[key] = min(
-            self.burst_size,
-            self.tokens[key] + time_passed * self.rate
+        token_key = self._get_token_key(key)
+        time_key = self._get_time_key(key)
+        
+        # Get current values
+        pipe = self.redis.pipeline()
+        pipe.get(token_key)
+        pipe.get(time_key)
+        results = pipe.execute()
+        
+        current_tokens = float(results[0] or 0)
+        last_time = float(results[1] or now)
+        
+        # Calculate new token count
+        plan_config = self.plan_limits[plan]
+        time_passed = now - last_time
+        new_tokens = min(
+            plan_config['burst'],
+            current_tokens + time_passed * plan_config['rate']
         )
-        self.last_time[key] = now
+        
+        # Update values
+        pipe = self.redis.pipeline()
+        pipe.set(token_key, str(new_tokens))
+        pipe.set(time_key, str(now))
+        pipe.execute()
+        
+        return new_tokens, now
     
-    def check_rate_limit(self, key: str, cost: float = 1.0) -> None:
+    async def check_rate_limit(
+        self,
+        key: str,
+        plan: str,
+        cost: float = 1.0,
+        action: Optional[str] = None
+    ) -> None:
         """Check if request is allowed under rate limit.
         
         Args:
-            key: Rate limit key (e.g., IP address).
-            cost: Cost of the request in tokens.
+            key: Rate limit key (e.g., user ID)
+            plan: Subscription plan name
+            cost: Cost of the request in tokens
+            action: Optional action type for logging
             
         Raises:
-            RateLimitError: If rate limit is exceeded.
+            RateLimitError: If rate limit is exceeded
         """
-        self._update_tokens(key)
+        plan_config = self.plan_limits.get(plan, self.plan_limits['free'])
+        current_tokens, _ = self._update_tokens(key, plan)
         
-        if self.tokens[key] < cost:
-            wait_time = (cost - self.tokens[key]) / self.rate
+        # Check token bucket limit
+        if current_tokens < cost:
+            wait_time = (cost - current_tokens) / plan_config['rate']
             raise RateLimitError(
-                limit=int(self.rate * 60),
+                limit=int(plan_config['rate'] * 60),
                 reset_time=int(wait_time)
             )
         
-        self.tokens[key] -= cost
+        # Check daily limit
+        daily_key = self._get_daily_key(key)
+        daily_count = int(self.redis.get(daily_key) or 0)
+        
+        if daily_count >= plan_config['daily_limit']:
+            raise RateLimitError(
+                limit=plan_config['daily_limit'],
+                reset_time=int(
+                    datetime.combine(
+                        datetime.utcnow().date() + timedelta(days=1),
+                        datetime.min.time()
+                    ).timestamp() - time.time()
+                )
+            )
+        
+        # Update counters atomically
+        pipe = self.redis.pipeline()
+        pipe.decr(self._get_token_key(key), float(cost))
+        pipe.incr(daily_key)
+        pipe.expire(daily_key, 86400)  # 24 hours
+        pipe.execute()
+        
+        # Record request for monitoring
+        if action:
+            self.record_request(key, action, cost)
 
-class APIRateLimiter(RateLimiter):
-    """Rate limiter specifically for API endpoints."""
+    def record_request(self, key: str, action: str, cost: float):
+        """Record request details for monitoring.
+        
+        Args:
+            key: Rate limit key (e.g., user ID)
+            action: Action type
+            cost: Request cost
+        """
+        now = datetime.utcnow().isoformat()
+        request_key = f"request_log:{key}:{now}"
+        
+        request_data = {
+            "timestamp": now,
+            "action": action,
+            "cost": cost
+        }
+        
+        # Store with 24h expiry
+        self.redis.setex(
+            request_key,
+            86400,  # 24 hours
+            json.dumps(request_data)
+        )
     
-    def __init__(self):
-        """Initialize API rate limiter with default limits."""
-        super().__init__(requests_per_minute=60, burst_size=10)
+    async def get_usage_stats(self, key: str, plan: str) -> dict:
+        """Get current usage statistics.
+        
+        Args:
+            key: Rate limit key (e.g., user ID)
+            plan: Subscription plan name
+            
+        Returns:
+            Dict with usage statistics
+        """
+        current_tokens, _ = self._update_tokens(key, plan)
+        daily_count = int(self.redis.get(self._get_daily_key(key)) or 0)
+        plan_config = self.plan_limits[plan]
+        
+        return {
+            "available_tokens": current_tokens,
+            "daily_requests": daily_count,
+            "daily_limit": plan_config['daily_limit'],
+            "burst_size": plan_config['burst'],
+            "requests_per_minute": int(plan_config['rate'] * 60)
+        }
+
+class ShobeisRateLimiter(RateLimiter):
+    """Rate limiter specifically for Shobeis API endpoints."""
+    
+    def __init__(self, redis_url: str = "redis://localhost:6379/0"):
+        """Initialize Shobeis rate limiter with endpoint-specific costs."""
+        super().__init__(redis_url)
         
         # Endpoint-specific costs
         self.endpoint_costs = {
             'analyze_text': 1.0,
             'analyze_file': 2.0,
-            'batch_analyze': lambda batch_size: max(1.0, batch_size * 0.5)
+            'batch_analyze': lambda batch_size: max(1.0, batch_size * 0.5),
+            'estimate': 0.1,  # Low cost for estimates
+            'charge': 1.0,
+            'balance': 0.1,   # Low cost for balance checks
+            'purchase': 1.0,
+            'refund': 1.0
         }
     
-    def check_endpoint_limit(self, key: str, endpoint: str, **kwargs) -> None:
-        """Check rate limit for specific endpoint.
+    async def check_endpoint_limit(
+        self,
+        key: str,
+        plan: str,
+        endpoint: str,
+        **kwargs
+    ) -> None:
+        """Check rate limit for specific Shobeis endpoint.
         
         Args:
-            key: Rate limit key (e.g., IP address).
-            endpoint: Name of the endpoint being accessed.
-            **kwargs: Additional parameters for cost calculation.
+            key: Rate limit key (e.g., user ID)
+            plan: Subscription plan name
+            endpoint: Name of the endpoint being accessed
+            **kwargs: Additional parameters for cost calculation
             
         Raises:
-            RateLimitError: If rate limit is exceeded.
+            RateLimitError: If rate limit is exceeded
         """
         cost = self.endpoint_costs.get(endpoint, 1.0)
         if callable(cost):
             cost = cost(**kwargs)
         
-        self.check_rate_limit(key, cost)
+        await self.check_rate_limit(key, plan, cost, endpoint)

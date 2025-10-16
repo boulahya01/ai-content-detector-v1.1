@@ -8,7 +8,7 @@ from app.utils.exceptions import (
     LanguageError, RateLimitError, SystemError
 )
 from app.utils.validation import InputValidator
-from app.utils.rate_limiter import APIRateLimiter
+from app.utils.rate_limiter import RateLimiter
 from app.utils.monitoring import MetricsCollector, PerformanceMonitor
 import json
 import logging
@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-rate_limiter = APIRateLimiter()
+rate_limiter = RateLimiter()
 input_validator = InputValidator()
 
 # Initialize monitoring
@@ -169,7 +169,7 @@ async def analyze_file(
             raise ValidationError("Invalid JSON in options", "options", str(e))
     
     # Process document
-    doc_result = DocumentProcessor.process_document(content, file.content_type)
+    doc_result = DocumentProcessor().process_document_bytes(content, file.content_type)
     
     # Validate extracted text
     text_content = doc_result["text"]

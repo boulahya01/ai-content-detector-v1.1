@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Import only auth to keep this module lightweight and avoid heavy deps/circular imports
-from app.api import auth
+# Import routers
+from app.api import auth, analytics, analyze, shobeis
+from app.api.admin import shobeis as admin_shobeis
+from app.api.admin import bulk_operations, monitoring
 
 
 # Minimal FastAPI app focused on auth testing
@@ -28,8 +30,16 @@ app.add_middleware(
     max_age=3600,
 )
 
-# Include only auth router for now
+# Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
+app.include_router(analyze.router, prefix="/api", tags=["analysis"])
+app.include_router(shobeis.router, prefix="/api/shobeis", tags=["shobeis"])
+
+# Admin routes
+app.include_router(admin_shobeis.router, tags=["admin"])
+app.include_router(bulk_operations.router, tags=["admin"])
+app.include_router(monitoring.router, tags=["admin"])
 
 # Initialize DB tables after models/router imports to avoid circular import
 from app.utils.database import init_db

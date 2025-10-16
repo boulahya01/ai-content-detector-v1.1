@@ -27,8 +27,7 @@ def test_text_analysis():
     assert 0 <= result["analysisDetails"]["aiProbability"] <= 100
     assert 0 <= result["analysisDetails"]["humanProbability"] <= 100
 
-@pytest.mark.asyncio
-async def test_api_analyze_endpoint():
+def test_api_analyze_endpoint():
     test_content = "This is a test content for API analysis."
     response = client.post(
         "/api/analyze",

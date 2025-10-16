@@ -16,11 +16,8 @@ depends_on = None
 
 def upgrade():
     with op.batch_alter_table('users') as batch_op:
-        # Remove email verification columns
-        batch_op.drop_column('email_verified')
-        batch_op.drop_column('email_verified_at')
-
-        # Ensure requests_count exists with default value
+        # Just ensure requests_count exists with default value
+        # The email verification columns were already dropped in 002
         batch_op.add_column(sa.Column('requests_count', sa.Integer(), server_default='0', nullable=False))
 
 def downgrade():

@@ -1,0 +1,723 @@
+# AI Content Detector Dashboard - Technical Requirements & Implementation Specifications
+
+## Phase 1: Core Analytics Infrastructure [HIGH PRIORITY]
+
+Technical Stack Requirements:
+- Database: PostgreSQL 14+ (for advanced aggregation features)
+- Backend: FastAPI with asyncio for non-blocking operations
+- Frontend: React 18+ with Suspense for data loading
+- Caching: Redis for real-time metrics
+- Message Queue: RabbitMQ for async processing
+
+### 0. Database Integration Strategy [CRITICAL]
+TODO [IMMEDIATE]
+Location: /backend/migrations/
+
+a) Extend Existing User Table
+```sql
+-- Migration: extend_user_table_analytics
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT 'free',
+ADD COLUMN IF NOT EXISTS credits_total INT DEFAULT 0,
+ADD COLUMN IF NOT EXISTS credits_used INT DEFAULT 0,
+ADD COLUMN IF NOT EXISTS last_activity TIMESTAMP,
+ADD COLUMN IF NOT EXISTS analysis_count INT DEFAULT 0;
+
+-- Add check constraints
+ALTER TABLE users
+ADD CONSTRAINT credits_check CHECK (credits_used <= credits_total),
+ADD CONSTRAINT valid_subscription_tier CHECK (subscription_tier IN ('free', 'basic', 'premium', 'enterprise'));
+```
+
+b) Create Related Analytics Tables
+```sql
+-- Migration: create_user_analytics_tables
+-- User-specific analysis statistics
+CREATE TABLE IF NOT EXISTS user_analysis_stats (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    total_analyses INT DEFAULT 0,
+    ai_detected_count INT DEFAULT 0,
+    human_detected_count INT DEFAULT 0,
+    avg_confidence DECIMAL(5,2),
+    avg_processing_time INT,
+    last_analysis_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- User API usage tracking
+CREATE TABLE IF NOT EXISTS user_api_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    endpoint VARCHAR(255),
+    request_count INT DEFAULT 0,
+    success_count INT DEFAULT 0,
+    error_count INT DEFAULT 0,
+    avg_response_time INT,
+    last_request TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_user_stats_user_id ON user_analysis_stats(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_user_id ON user_api_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_stats_last_analysis ON user_analysis_stats(last_analysis_date);
+```
+
+c) SQLAlchemy Model Updates
+Location: /backend/app/models/user.py
+```python
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Numeric
+from sqlalchemy.orm import relationship
+from datetime import datetime
+
+class User(Base):
+    __tablename__ = 'users'
+    
+    # Existing fields...
+    
+    # New analytics fields
+    subscription_tier = Column(String(50), default='free')
+    credits_total = Column(Integer, default=0)
+    credits_used = Column(Integer, default=0)
+    last_activity = Column(DateTime)
+    analysis_count = Column(Integer, default=0)
+    
+    # Relationships
+    analysis_stats = relationship("UserAnalysisStats", back_populates="user")
+    api_usage = relationship("UserApiUsage", back_populates="user")
+
+class UserAnalysisStats(Base):
+    __tablename__ = 'user_analysis_stats'
+    
+    id = Column(UUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'))
+    total_analyses = Column(Integer, default=0)
+    ai_detected_count = Column(Integer, default=0)
+    human_detected_count = Column(Integer, default=0)
+    avg_confidence = Column(Numeric(5, 2))
+    avg_processing_time = Column(Integer)
+    last_analysis_date = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User", back_populates="analysis_stats")
+
+class UserApiUsage(Base):
+    __tablename__ = 'user_api_usage'
+    
+    id = Column(UUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'))
+    endpoint = Column(String(255))
+    request_count = Column(Integer, default=0)
+    success_count = Column(Integer, default=0)
+    error_count = Column(Integer, default=0)
+    avg_response_time = Column(Integer)
+    last_request = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User", back_populates="api_usage")
+```
+
+Integration Benefits:
+- Maintains data consistency with existing user system
+- Enables efficient user-based analytics queries
+- Provides granular usage tracking
+- Supports subscription-based features
+- Facilitates user-specific reporting
+
+Status: Not Started
+Dependencies: Existing user authentication system
+Required Skills: PostgreSQL, SQLAlchemy, Database Migration
+
+### 1. Enhanced Database Schema
+TODO [IMMEDIATE]
+Location: /backend/migrations/
+Technical Requirements:
+
+a) Analytics Tables
+```sql
+-- analytics_daily_stats (Partitioned by date for better query performance)
+CREATE TABLE analytics_daily_stats (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    date DATE NOT NULL,
+    total_analyses INT DEFAULT 0,
+    ai_count INT DEFAULT 0,
+    human_count INT DEFAULT 0,
+    avg_confidence DECIMAL(5,2),
+    avg_processing_time INT,
+    language_distribution JSONB,
+    error_rate DECIMAL(5,2),
+    peak_hour TIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) PARTITION BY RANGE (date);
+
+-- performance_metrics (With hypertable for time-series optimization)
+CREATE TABLE performance_metrics (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    timestamp TIMESTAMP NOT NULL,
+    endpoint VARCHAR(255),
+    response_time INT,
+    success_rate DECIMAL(5,2),
+    error_count INT,
+    memory_usage DECIMAL(10,2),
+    cpu_usage DECIMAL(5,2),
+    concurrent_requests INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_success_rate CHECK (success_rate BETWEEN 0 AND 100),
+    CONSTRAINT valid_cpu_usage CHECK (cpu_usage BETWEEN 0 AND 100)
+);
+
+-- usage_statistics (With user-specific metrics)
+CREATE TABLE usage_statistics (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id),
+    timestamp TIMESTAMP NOT NULL,
+    endpoint VARCHAR(255),
+    request_count INT,
+    data_processed INT,
+    subscription_tier VARCHAR(50),
+    credits_used INT,
+    credits_remaining INT,
+    avg_response_time INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create indexes for common queries
+CREATE INDEX idx_analytics_date ON analytics_daily_stats(date);
+CREATE INDEX idx_performance_timestamp ON performance_metrics(timestamp);
+CREATE INDEX idx_usage_user_timestamp ON usage_statistics(user_id, timestamp);
+```
+
+b) Views for Common Queries
+```sql
+-- Recent analytics summary
+CREATE VIEW v_analytics_summary AS
+SELECT 
+    date,
+    total_analyses,
+    ai_count,
+    human_count,
+    avg_confidence,
+    (ai_count::float / NULLIF(total_analyses, 0) * 100)::decimal(5,2) as ai_percentage
+FROM analytics_daily_stats
+WHERE date >= CURRENT_DATE - INTERVAL '30 days';
+
+-- User performance metrics
+CREATE VIEW v_user_metrics AS
+SELECT 
+    u.id,
+    u.email,
+    COUNT(us.id) as total_requests,
+    AVG(us.avg_response_time) as avg_response_time,
+    SUM(us.credits_used) as total_credits_used
+FROM users u
+LEFT JOIN usage_statistics us ON u.id = us.user_id
+GROUP BY u.id, u.email;
+```
+
+c) Maintenance Procedures
+```sql
+-- Cleanup procedure for old data
+CREATE PROCEDURE cleanup_old_metrics()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DELETE FROM performance_metrics 
+    WHERE timestamp < CURRENT_TIMESTAMP - INTERVAL '90 days';
+    
+    -- Archive data to analytics_archive if needed
+    -- Additional cleanup logic
+END;
+$$;
+```
+
+Implementation Notes:
+- Use TimescaleDB extension for time-series data
+- Implement partition rotation for analytics_daily_stats
+- Set up automated vacuum for performance optimization
+- Configure proper retention policies
+
+Status: Not Started
+Dependencies: None
+Required Skills: PostgreSQL, TimescaleDB, Database Optimization
+
+### 2. Backend Analytics Service
+TODO [IMMEDIATE]
+Location: /backend/app/utils/analytics.py
+
+Technical Requirements:
+
+a) Core Analytics Service
+```python
+from typing import Dict, List, Optional
+from datetime import datetime, timedelta
+from fastapi import BackgroundTasks
+from sqlalchemy.ext.asyncio import AsyncSession
+from redis import Redis
+from app.models.cache import RedisCache
+
+class AnalyticsService:
+    def __init__(
+        self,
+        session: AsyncSession,
+        cache: RedisCache,
+        background_tasks: BackgroundTasks
+    ):
+        self.session = session
+        self.cache = cache
+        self.background_tasks = background_tasks
+        
+    async def calculate_analysis_stats(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        user_id: Optional[str] = None
+    ) -> Dict:
+        """
+        Calculate comprehensive analysis statistics with caching
+        
+        Cache Strategy:
+        - Daily stats cached for 1 hour
+        - Weekly stats cached for 6 hours
+        - Monthly stats cached for 24 hours
+        """
+        cache_key = f"stats:{start_date}:{end_date}:{user_id or 'all'}"
+        
+        # Try cache first
+        if cached := await self.cache.get(cache_key):
+            return cached
+            
+        # Calculate stats
+        stats = await self._compute_analysis_stats(start_date, end_date, user_id)
+        
+        # Cache with appropriate TTL
+        await self.cache.set(cache_key, stats, ttl=3600)  # 1 hour
+        return stats
+
+    async def track_performance_metrics(
+        self,
+        endpoint: str,
+        response_time: int,
+        status_code: int,
+        memory_usage: float,
+        cpu_usage: float
+    ) -> None:
+        """
+        Track API performance metrics asynchronously
+        - Uses background tasks for non-blocking operation
+        - Implements circuit breaker for error handling
+        - Aggregates metrics in memory before batch DB writes
+        """
+        self.background_tasks.add_task(
+            self._store_performance_metrics,
+            endpoint,
+            response_time,
+            status_code,
+            memory_usage,
+            cpu_usage
+        )
+
+    async def generate_usage_report(
+        self,
+        user_id: str,
+        period: str = "day"
+    ) -> Dict:
+        """
+        Generate detailed usage reports with trending analysis
+        - Supports daily/weekly/monthly aggregation
+        - Includes prediction for usage trends
+        - Calculates cost efficiency metrics
+        """
+        pass  # Implementation details...
+
+    async def _compute_analysis_stats(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        user_id: Optional[str]
+    ) -> Dict:
+        """Private method for computing statistics"""
+        pass  # Implementation details...
+
+    async def _store_performance_metrics(
+        self,
+        endpoint: str,
+        response_time: int,
+        status_code: int,
+        memory_usage: float,
+        cpu_usage: float
+    ) -> None:
+        """Private method for storing metrics"""
+        pass  # Implementation details...
+```
+
+b) Metrics Aggregator
+```python
+class MetricsAggregator:
+    """
+    Efficient metrics aggregation with batch processing
+    - Implements buffer for batch inserts
+    - Uses worker pool for parallel processing
+    - Handles data normalization
+    """
+    BATCH_SIZE = 1000
+    FLUSH_INTERVAL = 60  # seconds
+    
+    def __init__(self):
+        self.metrics_buffer = []
+        self.last_flush = datetime.now()
+    
+    async def add_metric(self, metric: Dict) -> None:
+        """Add metric to buffer with auto-flush"""
+        pass  # Implementation details...
+    
+    async def flush(self) -> None:
+        """Flush metrics to database"""
+        pass  # Implementation details...
+```
+
+c) Analytics Background Tasks
+```python
+class AnalyticsWorker:
+    """
+    Background worker for heavy analytics tasks
+    - Implements retry mechanism
+    - Handles task prioritization
+    - Manages resource allocation
+    """
+    pass  # Implementation details...
+```
+
+Required Dependencies:
+- SQLAlchemy for async database operations
+- Redis for caching
+- APScheduler for scheduled tasks
+- Pandas for data analysis
+- NumPy for numerical computations
+
+Status: Not Started
+Dependencies: Database schema
+Required Skills: Python, FastAPI, SQLAlchemy, Redis, Async Programming
+
+### 3. Analytics API Endpoints
+TODO [IMMEDIATE]
+Location: /backend/app/api/analytics.py
+Required Endpoints:
+```python
+@router.get("/analytics/summary")
+async def get_analytics_summary():
+    """Get overall analytics summary"""
+
+@router.get("/analytics/performance")
+async def get_performance_metrics():
+    """Get system performance metrics"""
+
+@router.get("/analytics/usage")
+async def get_usage_statistics():
+    """Get user usage statistics"""
+```
+Status: Not Started
+Dependencies: Analytics service
+
+### 4. Frontend API Integration
+TODO [HIGH]
+Location: /frontend/src/api/analytics.ts
+```typescript
+export const analyticsService = {
+  getSummary(): Promise<AnalyticsSummary>,
+  getPerformanceMetrics(): Promise<PerformanceMetrics>,
+  getUsageStatistics(): Promise<UsageStats>
+};
+```
+Status: Not Started
+Dependencies: Backend API endpoints
+
+## Phase 2: Real-Time Features [HIGH PRIORITY]
+
+### 5. WebSocket Implementation
+TODO [HIGH]
+Location: /backend/app/api/websocket.py
+Features:
+- Real-time analysis progress
+- Live metrics updates
+- Connection management
+Status: Frontend ready, backend missing
+Dependencies: None
+
+### 6. Analysis Progress Tracking
+TODO [HIGH]
+Location: /backend/app/models/analyzer.py
+Features:
+- Progress calculation
+- WebSocket events
+- Status updates
+Status: Partially implemented
+Dependencies: WebSocket implementation
+
+## Phase 3: Dashboard Components [MEDIUM PRIORITY]
+
+### 7. Dashboard Data Context
+TODO [MEDIUM]
+Location: /frontend/src/context/DashboardContext.tsx
+Features:
+- State management
+- Real-time updates
+- Data caching
+Status: Not Started
+Dependencies: Frontend API integration
+
+### 8. Dashboard UI Components
+TODO [MEDIUM]
+Location: /frontend/src/components/dashboard/
+Components needed:
+- AnalyticsSummary
+- PerformanceChart
+- UsageMetrics
+- RealTimeStatus
+Status: Basic components exist
+Dependencies: Dashboard context
+
+## Phase 4: Advanced Features [LOW PRIORITY]
+
+### 9. Enhanced Analytics
+TODO [LOW]
+Features:
+- Language distribution
+- Content length trends
+- Error patterns
+- User behavior
+Status: Not planned
+Dependencies: Core analytics
+
+### 10. Monitoring Dashboard
+TODO [LOW]
+Features:
+- System health
+- Error tracking
+- Performance monitoring
+Status: Not planned
+Dependencies: All previous phases
+
+## Ongoing Tasks
+
+### 11. Testing & Validation
+TODO [CONTINUOUS]
+- Unit tests for analytics
+- Integration tests
+- Performance testing
+- Load testing
+
+### 12. Documentation
+TODO [CONTINUOUS]
+- API documentation
+- Component documentation
+- Setup guides
+- Maintenance procedures
+
+1. Analysis Counts and Ratios
+TODO [High Priority] - Implement Analysis Statistics Endpoint
+Location: /backend/app/api/analyze.py
+- Create new endpoint '/api/analytics/stats'
+- Add aggregation for total/AI/human counts
+- Calculate AI vs Human ratio
+Current Status: Partially implemented (raw data available in analysis results)
+Data Source: analysis_result["prediction"] in analyzer.py
+
+2. Confidence Metrics
+TODO [High Priority] - Add Confidence Analytics
+Location: /backend/app/utils/analytics.py (new file)
+- Implement average confidence calculation
+- Add confidence trend analysis
+- Store historical confidence data
+Current Status: Raw confidence scores available
+Data Source: authenticityScore in AnalysisResult
+
+3. Performance Metrics
+TODO [Medium Priority] - Enhance Performance Monitoring
+Location: /backend/app/utils/monitoring.py
+- Add average processing time calculation
+- Implement performance trend tracking
+- Create performance metrics API
+Current Status: Basic timing available
+Data Source: metrics.inference_time in analyze.py
+
+4. API Usage Statistics
+TODO [High Priority] - Implement API Usage Tracking
+Location: /backend/app/utils/rate_limiter.py
+- Add detailed usage tracking
+- Implement usage analytics
+- Create usage reporting endpoint
+Current Status: Basic rate limiting exists
+Data Source: APIRateLimiter class
+
+5. Subscription Metrics
+TODO [Medium Priority] - Add Subscription Analytics
+Location: /backend/app/api/subscription.py (new file)
+- Track plan usage against limits
+- Calculate utilization rates
+- Monitor upgrade triggers
+Current Status: Basic plan info available
+Data Source: Subscription interface
+
+B. Database Updates Required
+
+TODO [High Priority] - Add Analytics Tables
+Location: /backend/migrations/
+New Tables Needed:
+1. analytics_daily_stats
+   - date
+   - total_analyses
+   - ai_count
+   - human_count
+   - avg_confidence
+   - avg_processing_time
+
+2. performance_metrics
+   - timestamp
+   - endpoint
+   - response_time
+   - success_rate
+   - error_count
+
+3. usage_statistics
+   - user_id
+   - timestamp
+   - endpoint
+   - request_count
+   - data_processed
+
+C. Frontend Integration
+
+TODO [High Priority] - Create Dashboard API Client
+Location: /frontend/src/api/dashboard.ts
+- Implement analytics data fetching
+- Add real-time updates
+- Implement data caching
+
+TODO [Medium Priority] - Add Dashboard Context
+Location: /frontend/src/context/DashboardContext.tsx
+- Create state management for metrics
+- Implement update mechanisms
+- Add error handling
+
+D. Additional Features (Lower Priority)
+
+TODO [Low Priority] - Enhanced Analytics
+- Language distribution analysis
+- Content length trends
+- Error pattern analysis
+- User behavior insights
+- Peak usage patterns
+
+E. Implementation Priority Order
+
+1. High Priority (Immediate Impact)
+   - Analysis counts and ratios
+   - Confidence analytics
+   - API usage tracking
+   - Dashboard API client
+
+2. Medium Priority (Important Features)
+   - Performance monitoring
+   - Subscription analytics
+   - Dashboard context
+   - Database schema updates
+
+3. Low Priority (Enhancement Features)
+   - Enhanced analytics
+   - Historical trends
+   - Advanced insights
+
+F. Missing Frontend-Backend Connections
+
+1. WebSocket Integration
+TODO [High Priority] - Complete WebSocket Implementation
+Location: backend/app/api/websocket.py (new file)
+- WebSocket endpoint for real-time analysis updates exists in frontend but missing in backend
+- Need to implement WebSocket server handlers
+- Add authentication for WebSocket connections
+Current Status: Frontend ready, backend missing
+Connected Files:
+- Frontend: /frontend/src/lib/websocket.ts
+- Backend: Missing implementation
+
+2. Analysis Progress Updates
+TODO [High Priority] - Real-time Progress Updates
+Location: backend/app/models/analyzer.py
+- Implement progress tracking during analysis
+- Add WebSocket events for progress updates
+- Connect progress updates to frontend progress bar
+Current Status: Frontend UI ready, backend events missing
+Connected Files:
+- Frontend: /frontend/src/context/AnalysisContext.tsx
+- Backend: Needs implementation in analyzer.py
+
+3. API Integration Points
+TODO [Medium Priority] - Complete API Endpoints
+Missing Endpoints:
+a) Analytics API (/api/analytics)
+   - Frontend expects dashboard statistics
+   - Backend needs aggregation endpoints
+   
+b) History API Enhancement (/api/history)
+   - Frontend has pagination support
+   - Backend needs to implement pagination
+   
+c) Batch Processing API (/api/batch)
+   - Frontend has batch upload UI
+   - Backend needs batch processing implementation
+
+4. Authentication Flow
+TODO [High Priority] - Complete Auth Integration
+Incomplete Connections:
+- Token refresh mechanism
+- Session management
+- User preferences sync
+Current Status: Basic auth works, advanced features missing
+
+5. Rate Limiting Integration
+TODO [Medium Priority] - Rate Limit Handling
+Location: frontend/src/lib/api.ts
+- Add rate limit headers to backend responses
+- Implement frontend rate limit handling
+- Add user feedback for rate limits
+Current Status: Backend has rate limiting, frontend handling missing
+
+6. Error Handling Integration
+TODO [High Priority] - Error Handling Standardization
+Location: Multiple Files
+- Standardize error responses from backend
+- Implement consistent error handling in frontend
+- Add error recovery mechanisms
+Current Status: Basic error handling exists, needs standardization
+
+7. Subscription Integration
+TODO [High Priority] - Complete Subscription Flow
+Missing Connections:
+- Usage tracking integration
+- Plan upgrade/downgrade flow
+- Payment processing webhooks
+Current Status: Basic subscription model exists, advanced features missing
+
+G. Monitoring and Maintenance
+
+TODO [Ongoing] - Metrics Reliability
+- Implement data validation
+- Add error tracking
+- Monitor metric accuracy
+- Optimize query performance
+- Add health check endpoints
+- Implement monitoring dashboard
+
+Updates to this plan should be made as new requirements are identified or as implementation progress is made.
+
+// apply todos here one by one as we progress
+1 - 

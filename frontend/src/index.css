@@ -9,16 +9,69 @@
 	--content-max-width: 72rem;
 }
 
+/* Hide scrollbars globally */
+* {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+    width: 0 !important;
+    display: none !important;
+}
+
+/* Specific overrides for auth pages */
+.flex.min-h-screen {
+    overflow: hidden !important;
+}
+
+/* Form container overrides */
+form.space-y-6 {
+    overflow: hidden !important;
+}
+
+/* Hide scrollbar for authentication pages */
+.auth-container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+    overflow: auto;
+}
+
+.auth-container::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+}
+
+.auth-container * {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+.auth-container *::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+}
+
 @layer base {
 	html, body, #root {
 		height: 100%;
+		scrollbar-width: none !important;
+		-ms-overflow-style: none !important;
+		overflow-y: auto !important;
+	}
+
+	html::-webkit-scrollbar,
+	body::-webkit-scrollbar,
+	#root::-webkit-scrollbar {
+		width: 0 !important;
+		display: none !important;
 	}
 
 	body {
-		background-color: var(--bg-900);
-		color: var(--text-100);
+		 background-color: var(--bg-900);
+		 color: var(--text-100);
+		 font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
+		overflow-y: scroll !important;
 	}
 
 	h1, h2, h3 {
@@ -30,7 +83,7 @@
 		}
 
 		p {
-			@apply text-base leading-7 text-gray-700;
+			@apply text-base leading-7 text-white/70;
 		}
 
 
