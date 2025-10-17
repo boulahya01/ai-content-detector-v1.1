@@ -28,3 +28,7 @@ logs/
 *.log
 # Misc
 *.sqlite3
+*.db
+*.db.bak*
+backend/*.db
+backend/*.db.bak*
