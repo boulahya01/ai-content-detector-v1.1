@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -26,39 +27,35 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def init_db():
     """Initialize database tables"""
     try:
-        # Import all model modules to ensure SQLAlchemy mappers are registered
-        import pkgutil
-        import app.models as models_pkg
-
-        import sys
-        import importlib.util
-        app_models_dir = os.path.dirname(models_pkg.__file__)
-
-        # Enumerate Python files in the app/models directory and import them by module name.
-        for fname in os.listdir(app_models_dir):
-            if not fname.endswith('.py') or fname.startswith('__'):
-                continue
-            name = os.path.splitext(fname)[0]
-            module_name = f"app.models.{name}"
-
-            # Avoid re-importing a module if already loaded
-            if module_name in sys.modules:
-                logger.debug(f"Module {module_name} already imported, skipping")
-                continue
-
-            # Double-check module spec origin to ensure it points to this app/models file
-            try:
-                spec = importlib.util.spec_from_file_location(module_name, os.path.join(app_models_dir, fname))
-            except Exception:
-                spec = None
-
-            if spec:
-                importlib.import_module(module_name)
-            else:
-                logger.debug(f"Skipping import of {module_name} (no spec)")
+        # Import models in dependency order to avoid circular imports
+        from app.models.user import User, UserType, SubscriptionStatus
+        from app.models.blacklisted_token import BlacklistedToken
+        from app.models.shobeis_transaction import ShobeisTransaction, TransactionType
+        from app.models.pricing import PricingTable
+        from app.models.user_analytics import UserAnalytics
 
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
+        
+        # Add initial pricing table data
+        try:
+            session = SessionLocal()
+            session.execute(
+                text("""
+                INSERT INTO pricing_table (action_type, unit, base_shobeis, min_charge)
+                VALUES ('word_analysis', 'WORD', 1, 10)
+                ON CONFLICT (action_type) DO UPDATE SET
+                    unit = excluded.unit,
+                    base_shobeis = excluded.base_shobeis,
+                    min_charge = excluded.min_charge
+                """)
+            )
+            session.commit()
+            session.close()
+            logger.info("Added initial pricing data")
+        except Exception as e:
+            logger.error(f"Failed to add initial pricing: {e}")
+            
         # Seed pro test user into the main DB as well for tests that hit the primary engine
         try:
             from sqlalchemy.orm import sessionmaker

@@ -36,21 +36,24 @@ class AnalyticsService:
         user = result.scalar_one_or_none()
         
         if not user:
-            return None
+            return {}
 
-        # Compile analytics
+        # Compile analytics (use unified user fields)
         analytics = {
             "user": {
                 "id": user.id,
-                "subscription_tier": user.subscription_tier,
-                "credits_used": user.credits_used,
-                "credits_total": user.credits_total
+                "user_type": user.user_type.name if getattr(user, 'user_type', None) is not None else getattr(user, 'subscription_tier', None),
+                "shobeis_balance": getattr(user, 'shobeis_balance', 0),
+                "bonus_balance": getattr(user, 'bonus_balance', 0),
+                "total_words_analyzed": getattr(user, 'total_words_analyzed', 0),
+                "total_api_calls": getattr(user, 'total_api_calls', 0),
+                "total_exports": getattr(user, 'total_exports', 0)
             },
             "analysis": {
                 "total_count": user.analysis_stats.total_analyses if user.analysis_stats else 0,
                 "ai_count": user.analysis_stats.ai_detected_count if user.analysis_stats else 0,
                 "human_count": user.analysis_stats.human_detected_count if user.analysis_stats else 0,
-                "avg_confidence": float(user.analysis_stats.avg_confidence) if user.analysis_stats else 0,
+                "avg_confidence": float(user.analysis_stats.avg_confidence) if user.analysis_stats and user.analysis_stats.avg_confidence is not None else 0,
                 "avg_processing_time": user.analysis_stats.avg_processing_time if user.analysis_stats else 0,
             },
             "api_usage": [
@@ -85,23 +88,24 @@ class AnalyticsService:
             if not stats:
                 stats = UserAnalysisStats(user_id=user_id)
                 self.session.add(stats)
-            
+
+            # Convert current values to ints/floats to avoid ColumnElement issues
+            total = int(getattr(stats, 'total_analyses', 0) or 0) + 1
+            ai_count = int(getattr(stats, 'ai_detected_count', 0) or 0) + (1 if is_ai else 0)
+            human_count = int(getattr(stats, 'human_detected_count', 0) or 0) + (0 if is_ai else 1)
+
             # Update stats
-            stats.total_analyses += 1
-            if is_ai:
-                stats.ai_detected_count += 1
-            else:
-                stats.human_detected_count += 1
-            
-            # Update averages
-            stats.avg_confidence = (
-                (stats.avg_confidence * (stats.total_analyses - 1) + confidence)
-                / stats.total_analyses
-            )
-            stats.avg_processing_time = (
-                (stats.avg_processing_time * (stats.total_analyses - 1) + processing_time)
-                / stats.total_analyses
-            )
+            stats.total_analyses = total
+            stats.ai_detected_count = ai_count
+            stats.human_detected_count = human_count
+
+            # Update averages safely
+            prev_avg_conf = float(getattr(stats, 'avg_confidence', 0) or 0)
+            stats.avg_confidence = (prev_avg_conf * (total - 1) + confidence) / total
+
+            prev_avg_time = float(getattr(stats, 'avg_processing_time', 0) or 0)
+            stats.avg_processing_time = (prev_avg_time * (total - 1) + processing_time) / total
+
             stats.last_analysis_date = datetime.utcnow()
 
     async def track_api_usage(
@@ -126,17 +130,14 @@ class AnalyticsService:
                 self.session.add(usage)
             
             # Update stats
-            usage.request_count += 1
-            if success:
-                usage.success_count += 1
-            else:
-                usage.error_count += 1
-            
+            # Update counters with safe int conversions
+            usage.request_count = int(getattr(usage, 'request_count', 0) or 0) + 1
+            usage.success_count = int(getattr(usage, 'success_count', 0) or 0) + (1 if success else 0)
+            usage.error_count = int(getattr(usage, 'error_count', 0) or 0) + (0 if success else 1)
+
             # Update average response time
-            usage.avg_response_time = (
-                (usage.avg_response_time * (usage.request_count - 1) + response_time)
-                / usage.request_count
-            )
+            prev_avg = float(getattr(usage, 'avg_response_time', 0) or 0)
+            usage.avg_response_time = (prev_avg * (usage.request_count - 1) + response_time) / usage.request_count
             usage.last_request = datetime.utcnow()
 
     async def get_system_analytics(self) -> Dict:

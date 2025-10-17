@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request, Response
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request, Response, Depends
 from fastapi.responses import JSONResponse
 from typing import Optional, Dict, Any
 from app.models.analyzer import AIContentAnalyzer
@@ -10,11 +10,14 @@ from app.utils.exceptions import (
 from app.utils.validation import InputValidator
 from app.utils.rate_limiter import RateLimiter
 from app.utils.monitoring import MetricsCollector, PerformanceMonitor
+from app.api.auth import get_current_user
 import json
 import logging
 import time
 from functools import wraps
 from pydantic import BaseModel
+from app.utils.database import SessionLocal
+from app.services.shobeis_service import ShobeisService, InsufficientShobeisError
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -39,7 +42,9 @@ def error_handler(func):
             # Rate limiting
             if request:
                 client_ip = request.client.host
-                rate_limiter.check_endpoint_limit(client_ip, func.__name__)
+                # Use the user's plan if available; otherwise default to 'free'
+                plan = getattr(getattr(request, 'user', None), 'subscription_tier', 'free')
+                await rate_limiter.check_endpoint_limit(client_ip, plan, func.__name__)
             
             # Execute endpoint
             result = await func(*args, **kwargs)
@@ -96,7 +101,7 @@ class AnalyzeRequest(BaseModel):
 
 @router.post("/analyze")
 @error_handler
-async def analyze_text(request: AnalyzeRequest):
+async def analyze_text(request: AnalyzeRequest, current_user=Depends(get_current_user)):
     """Analyze plain text content.
     
     Args:
@@ -109,10 +114,21 @@ async def analyze_text(request: AnalyzeRequest):
     # Validate input
     validated_text = input_validator.validate_text(request.content)
     
-    # Perform analysis with timing
-    start_time = time.time()
-    result = analyzer.analyze_text(validated_text)
-    inference_time = time.time() - start_time
+    # Charge for analysis
+    db = SessionLocal()
+    try:
+        sh_service = ShobeisService(db)
+        try:
+            tx = sh_service.process_charge(user=current_user, action_type='word_analysis', quantity=len(validated_text.split()), idempotency_key=None)
+        except InsufficientShobeisError:
+            raise HTTPException(status_code=402, detail="Insufficient Shobeis balance")
+
+        # Perform analysis with timing
+        start_time = time.time()
+        result = analyzer.analyze_text(validated_text)
+        inference_time = time.time() - start_time
+    finally:
+        db.close()
 
     # Record inference metrics
     performance_monitor.record_inference(
@@ -133,7 +149,8 @@ async def analyze_text(request: AnalyzeRequest):
 async def analyze_file(
     request: Request,
     file: UploadFile = File(...),
-    options: Optional[str] = Form(None)
+    options: Optional[str] = Form(None),
+    current_user=Depends(get_current_user)
 ) -> Dict[str, Any]:
     """Analyze content from various file formats.
     
@@ -172,22 +189,37 @@ async def analyze_file(
     doc_result = DocumentProcessor().process_document_bytes(content, file.content_type)
     
     # Validate extracted text
-    text_content = doc_result["text"]
+    text_content = doc_result.get("text")
+    if isinstance(text_content, dict):
+        # defensive: if processor returned structured dict, extract text key
+        text_content = text_content.get('text', '')
     if not text_content.strip():
         raise DocumentError(
             "No text content found in document",
             {"file_name": file.filename}
         )
     
-    validated_text = input_validator.validate_text(text_content)
+    validated_text = input_validator.validate_text(str(text_content))
     
     # Perform analysis with timing
-    start_time = time.time()
-    analysis_result = analyzer.analyze_text(
-        validated_text,
-        **analysis_options
-    )
-    inference_time = time.time() - start_time
+    # Charge for analysis of extracted text
+    db = SessionLocal()
+    try:
+        sh_service = ShobeisService(db)
+        try:
+            tx = sh_service.process_charge(user=current_user, action_type='word_analysis', quantity=len(validated_text.split()))
+        except InsufficientShobeisError:
+            raise HTTPException(status_code=402, detail="Insufficient Shobeis balance")
+
+        # Perform the analysis
+        start_time = time.time()
+        analysis_result = analyzer.analyze_text(
+            validated_text,
+            **analysis_options
+        )
+        inference_time = time.time() - start_time
+    finally:
+        db.close()
 
     # Record inference metrics
     performance_monitor.record_inference(

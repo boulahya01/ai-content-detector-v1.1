@@ -6,7 +6,7 @@ from typing import Optional
 from passlib.context import CryptContext
 import os
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional
 
 # Use passlib for password hashing (ensure passlib is installed)
@@ -25,16 +25,31 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
+    expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.now(UTC),  # Add issued-at time
+    })
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     # jwt.encode returns a str in PyJWT v2
     return encoded_jwt
 
 def decode_token(token: str) -> dict:
     try:
+        # First verify and decode the token
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
+        
+        # Then check if token is blacklisted
+        from ..models.blacklisted_token import BlacklistedToken
+        from ..utils.database import SessionLocal
+        
+        db = SessionLocal()
+        try:
+            if BlacklistedToken.is_blacklisted(db, token):
+                raise ValueError("Token has been invalidated")
+            return payload
+        finally:
+            db.close()
     except jwt.ExpiredSignatureError:
         raise ValueError("Token has expired")
     except jwt.InvalidTokenError:
