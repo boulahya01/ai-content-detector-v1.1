@@ -1,69 +1,74 @@
-import api from '@/lib/api';
-import type {
-  Balance,
-  Transaction,
-  EstimateRequest,
-  EstimateResponse,
-  ReferralRequest,
-  PurchaseRequest,
-  RefundRequest,
-} from '@/types/shobeis';
+import api from '../lib/api';
 
-export const shobeisApi = {
-  // Balance operations
-  getBalance: async () => {
-    const response = await api.get<Balance>('/shobeis/balance');
-    return response.data;
-  },
-    
-  // Cost estimation
-  estimateCost: async (request: EstimateRequest) => {
-    const response = await api.post<EstimateResponse>('/shobeis/estimate', request);
-    return response.data;
-  },
-    
-  // Transactions
-  createTransaction: async (
-    type: string,
-    params: { 
-      word_count?: number;
-      file_type?: string;
-      is_bulk?: boolean;
-      meta?: Record<string, any>;
-    }
-  ) => {
-    const response = await api.post<Transaction>(`/shobeis/transactions/${type}`, params);
-    return response.data;
-  },
-    
-  listTransactions: async (params?: {
-    limit?: number;
-    offset?: number;
-    type_filter?: string;
-    start_date?: string;
-    end_date?: string;
-  }) => {
-    const response = await api.get<Transaction[]>('/shobeis/transactions', { params });
-    return response.data;
-  },
-    
-  // Referral system
-  createReferral: async (request: ReferralRequest) => {
-    const response = await api.post<{ success: boolean; referral_code: string }>(
-      '/shobeis/referral', 
-      request
-    );
-    return response.data;
-  },
-    
-  // Purchase and refunds
-  purchaseShobeis: async (request: PurchaseRequest) => {
-    const response = await api.post<Transaction>('/shobeis/purchase', request);
-    return response.data;
-  },
-    
-  refundTransaction: async (request: RefundRequest) => {
-    const response = await api.post<Transaction>('/shobeis/refund', request);
-    return response.data;
-  },
-};
+export interface ShobeisBalance {
+  balance: number;
+  bonus: number;
+  user_type: string;
+  monthly_refresh_amount: number;
+}
+
+export async function getBalance(): Promise<ShobeisBalance> {
+  const response = await api.get('/shobeis/balance');
+  return response.data;
+}
+
+export interface TransactionResponse {
+  transaction_id: string;
+  balance: number;
+  amount: number;
+  balance_before: number;
+  balance_after: number;
+}
+
+export async function charge(actionType: string, quantity: number = 1, idempotencyKey?: string): Promise<TransactionResponse> {
+  const response = await api.post('/shobeis/charge', {
+    action_type: actionType,
+    quantity,
+    idempotency_key: idempotencyKey
+  });
+  return response.data;
+}
+
+export interface CostEstimate {
+  cost: number;
+  action_type: string;
+  quantity: number;
+}
+
+export async function estimateCost(actionType: string, quantity: number = 1): Promise<CostEstimate> {
+  const response = await api.post('/shobeis/estimate', {
+    action_type: actionType,
+    quantity
+  });
+  return response.data;
+}
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  action_type: string;
+  amount: number;
+  created_at: string;
+  balance_before: number;
+  balance_after: number;
+}
+
+export interface TransactionHistory {
+  transactions: Transaction[];
+}
+
+export async function getTransactions(limit: number = 50, offset: number = 0): Promise<TransactionHistory> {
+  const response = await api.get(`/shobeis/transactions?limit=${limit}&offset=${offset}`);
+  return response.data;
+}
+
+export interface PurchaseRequest {
+  amount: number;
+  payment_method_id: string;
+  currency?: string;
+}
+
+export async function purchase(data: PurchaseRequest): Promise<any> {
+  const response = await api.post('/shobeis/purchase', data);
+  return response.data;
+}

@@ -7,6 +7,14 @@ interface RetryConfig extends AxiosRequestConfig {
   retryCount?: number;
   maxRetries?: number;
   retryDelay?: number;
+  url?: string;
+}
+
+// Add custom properties to AxiosRequestConfig
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    _retry?: boolean;
+  }
 }
 
 console.log('API Base URL:', baseURL);
@@ -70,27 +78,42 @@ api.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (error.response?.status === 401) {
+      // Only attempt refresh if this is not already a refresh token request
+      if (!originalRequest._retry && !originalRequest.url?.includes('/auth/refresh')) {
+        originalRequest._retry = true;
 
-      try {
-        const token = localStorage.getItem('access_token');
-        const response = await axios.post(`${api.defaults.baseURL}/auth/refresh`, null, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        try {
+          const token = localStorage.getItem('access_token');
+          if (!token) {
+            // No token available, redirect to login
+            window.location.href = '/login';
+            return Promise.reject(error);
           }
-        });
 
-        const { access_token } = response.data;
-        localStorage.setItem('access_token', access_token);
+          const response = await api.post('/auth/refresh', null, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            _retry: true // Mark this as a refresh request
+          });
 
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+          const { access_token } = response.data;
+          localStorage.setItem('access_token', access_token);
+
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${access_token}`;
+          }
+          return api(originalRequest);
+        } catch (refreshError) {
+          // If refresh fails, clear token and redirect to login
+          localStorage.removeItem('access_token');
+          window.location.href = '/login';
+          return Promise.reject(error);
         }
-        return api(originalRequest);
-      } catch (error) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+      } else {
+        // Either this is a refresh request that failed, or we already tried refreshing
+        localStorage.removeItem('access_token');
         window.location.href = '/login';
         return Promise.reject(error);
       }

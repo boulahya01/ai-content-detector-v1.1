@@ -51,7 +51,7 @@ export const analyticsService = {
 
   async getSystemAnalytics(): Promise<SystemAnalytics> {
     try {
-      const response = await api.get('/analytics/system');
+      const response = await api.get('/analytics/system/status');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch system analytics:', error);

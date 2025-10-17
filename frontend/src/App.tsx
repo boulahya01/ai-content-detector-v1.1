@@ -48,19 +48,7 @@ function App() {
     [
       {
         path: '/',
-        element: (
-          <AuthProvider>
-            <SubscriptionProvider>
-              <AnalysisProvider>
-                <AnalyticsProvider>
-                  <ShobeisProvider>
-                    <Layout />
-                  </ShobeisProvider>
-                </AnalyticsProvider>
-              </AnalysisProvider>
-            </SubscriptionProvider>
-          </AuthProvider>
-        ),
+        element: <Layout />,
         children: [
           // Public routes
           { 
@@ -172,10 +160,20 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
-        <RouterProvider router={router} />
-      </Suspense>
-      <Toaster />
+      <AuthProvider>
+        <SubscriptionProvider>
+          <AnalysisProvider>
+            <AnalyticsProvider>
+              <ShobeisProvider>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <RouterProvider router={router} />
+                </Suspense>
+                <Toaster />
+              </ShobeisProvider>
+            </AnalyticsProvider>
+          </AnalysisProvider>
+        </SubscriptionProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

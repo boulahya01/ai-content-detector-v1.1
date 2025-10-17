@@ -107,14 +107,13 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     [user?.id, fetchUserAnalytics]
   );
 
-  // Automatic data refresh every minute (safe pattern)
+  // Load analytics data once when the component mounts
   React.useEffect(() => {
-    const interval = setInterval(() => {
+    if (user?.id) {
       fetchUserAnalytics();
       fetchSystemAnalytics();
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []); // Only run once on mount
+    }
+  }, [user?.id]); // Only run when user changes
 
   const value = {
     userAnalytics,
