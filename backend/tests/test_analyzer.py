@@ -27,29 +27,35 @@ def test_text_analysis():
     assert 0 <= result["analysisDetails"]["aiProbability"] <= 100
     assert 0 <= result["analysisDetails"]["humanProbability"] <= 100
 
-def test_api_analyze_endpoint():
+def test_api_analyze_endpoint(client: TestClient, auth_headers: dict):
+    """Test analyzing text through API endpoint."""
     test_content = "This is a test content for API analysis."
     response = client.post(
         "/api/analyze",
-        json={"content": test_content}
+        json={"content": test_content},
+        headers=auth_headers
     )
     
-    assert response.status_code == 200
+    assert response.status_code == 200, f"Analysis failed: {response.json()}"
     result = response.json()
     assert "success" in result
     assert result["success"] == True
     assert "data" in result
     assert "authenticityScore" in result["data"]
 
-def test_api_file_upload():
-    # Create a test file
+def test_api_file_upload(client: TestClient, auth_headers: dict):
+    """Test analyzing uploaded file through API endpoint."""
     test_content = b"This is a test file content for analysis."
     files = {
         "file": ("test.txt", test_content, "text/plain")
     }
-    response = client.post("/api/analyze/file", files=files)
+    response = client.post(
+        "/api/analyze/file",
+        files=files,
+        headers=auth_headers
+    )
     
-    assert response.status_code == 200
+    assert response.status_code == 200, f"File analysis failed: {response.json()}"
     result = response.json()
     assert "success" in result
     assert result["success"] == True

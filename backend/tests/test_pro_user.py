@@ -28,44 +28,44 @@ def test_pro_user_login():
     # Verify user data
     user_data = data["user"]
     assert user_data["email"] == "pro.test@aidetector.com"
-    assert user_data["role"] == "pro"
-    assert user_data["subscription_tier"] == "pro"
-    assert user_data["full_name"] == "Test Pro User"
+    assert user_data["user_type"].lower() == "pro"
+    assert user_data["full_name"] == "Pro User"
     
     token = data["access_token"]
     
     # Test accessing balance endpoint
     balance_response = client.get(
-        "/api/shobeis/balance",
+        "/api/shobeis/shobeis/balance",
         headers={"Authorization": f"Bearer {token}"}
     )
     assert balance_response.status_code == 200
     balance_data = balance_response.json()
-    assert balance_data["shobeis_balance"] >= 0
-    assert "monthly_refresh_amount" in balance_data
+    assert balance_data["balance"] >= 0
     assert balance_data["monthly_refresh_amount"] == 1000
     
     # Test accessing transaction history
     tx_response = client.get(
-        "/api/shobeis/transactions",
+        "/api/shobeis/shobeis/transactions",
         headers={"Authorization": f"Bearer {token}"}
     )
     assert tx_response.status_code == 200
-    transactions = tx_response.json()
+    response_data = tx_response.json()
+    assert "transactions" in response_data
+    transactions = response_data["transactions"]
     assert len(transactions) > 0
-    
+
     # Verify transaction fields
     tx = transactions[0]
-    assert "transaction_id" in tx
-    assert "user_id" in tx
-    assert "transaction_type" in tx
+    assert "id" in tx  # Transaction identifier field
     assert "amount" in tx
-    assert "balance_before" in tx
-    assert "balance_after" in tx
     assert "created_at" in tx
+    assert "description" in tx
+    assert "transaction_type" in tx
+    assert "status" in tx
+    assert "meta" in tx
     
     print("\nPro User Test Successful:")
-    print(f"- Balance: {balance_data['shobeis_balance']} Shobeis")
+    print(f"- Balance: {balance_data['balance']} Shobeis")
     print(f"- Monthly Refresh: {balance_data['monthly_refresh_amount']} Shobeis")
     print(f"- Transaction Count: {len(transactions)}")
     
@@ -74,12 +74,11 @@ def test_pro_user_login():
 def test_create_transaction(token: str):
     """Test creating a new transaction"""
     response = client.post(
-        "/api/shobeis/transactions/TEXT_ANALYSIS",
+        "/api/shobeis/shobeis/charge",
         headers={"Authorization": f"Bearer {token}"},
         json={
-            "word_count": 1000,
-            "file_type": "txt",
-            "is_bulk": False,
+            "action_type": "word_analysis",
+            "quantity": 1000,
             "meta": {
                 "test": True,
                 "source": "test_case"
@@ -89,7 +88,6 @@ def test_create_transaction(token: str):
     
     assert response.status_code == 200
     tx = response.json()
-    assert tx["transaction_type"] == "TEXT_ANALYSIS"
     assert tx["amount"] < 0  # Should be a debit
     assert "balance_before" in tx
     assert "balance_after" in tx

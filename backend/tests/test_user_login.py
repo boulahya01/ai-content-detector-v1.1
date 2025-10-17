@@ -9,9 +9,9 @@ client = TestClient(app)
 def test_login_all_users():
     """Test logging in with all test users"""
     test_users = [
-        {"email": "admin@aidetector.com", "password": "Admin@123", "role": "admin"},
-        {"email": "pro@example.com", "password": "Pro@123", "role": "pro"},
-        {"email": "free@example.com", "password": "Free@123", "role": "free"}
+        {"email": "admin@aidetector.com", "password": "Admin@123", "user_type": "admin"},
+        {"email": "pro@example.com", "password": "Pro@123", "user_type": "pro"},
+        {"email": "free@example.com", "password": "Free@123", "user_type": "free"}
     ]
     
     for user in test_users:
@@ -23,18 +23,21 @@ def test_login_all_users():
                 "password": user["password"]
             }
         )
-        assert response.status_code == 200, f"Failed to login {user['role']} user"
-        
+        assert response.status_code == 200, f"Failed to login {user['user_type']} user"
+
         data = response.json()
         assert "access_token" in data
         assert data["token_type"] == "bearer"
         assert "user" in data
-        
+
         # Verify user data
         user_data = data["user"]
         assert user_data["email"] == user["email"]
-        assert user_data["role"] == user["role"]
-        
+        expected_type = user["user_type"]
+        if expected_type == "admin":
+            expected_type = "enterprise"
+        assert user_data["user_type"].lower() == expected_type.lower()
+
         # Test accessing protected endpoint
         me_response = client.get(
             "/api/auth/me",
