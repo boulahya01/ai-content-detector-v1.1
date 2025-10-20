@@ -30,11 +30,24 @@ export default function DashboardPage() {
 
   function getDayOfWeekAnalytics() {
     if (!userAnalytics) return [];
+    const total = userAnalytics.analysis.total_count || 0;
+    const perDay = total ? Math.floor(total / 7) : 0;
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days.map(day => ({
-      day,
-      value: Math.floor(userAnalytics.analysis.total_count / 7)
-    }));
+    return days.map(day => ({ day, value: perDay }));
+  }
+
+  function safePercent(part?: number, total?: number) {
+    const p = part || 0;
+    const t = total || 0;
+    if (!t) return 0;
+    return Math.round((p / t) * 100);
+  }
+
+  function safeFraction(part?: number, total?: number) {
+    const p = part || 0;
+    const t = total || 0;
+    if (!t) return 0;
+    return (p / t) * 100;
   }
 
   return (
@@ -109,7 +122,7 @@ export default function DashboardPage() {
                 <>
                   <TimeTrackerCard
                     series={getDayOfWeekAnalytics()}
-                    totalHours={`${userAnalytics.analysis.total_count} analyses`}
+                    totalHours={`${userAnalytics.analysis.total_count || 0} analyses`}
                   />
                   <div className="dashboard-card p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -121,13 +134,13 @@ export default function DashboardPage() {
                             data: [
                               {
                                 type: 'AI',
-                                percentage: Math.round((userAnalytics.analysis.ai_count / userAnalytics.analysis.total_count) * 100),
-                                count: userAnalytics.analysis.ai_count
+                                percentage: safePercent(userAnalytics.analysis.ai_count, userAnalytics.analysis.total_count),
+                                count: userAnalytics.analysis.ai_count || 0
                               },
                               {
                                 type: 'Human',
-                                percentage: Math.round((userAnalytics.analysis.human_count / userAnalytics.analysis.total_count) * 100),
-                                count: userAnalytics.analysis.human_count
+                                percentage: safePercent(userAnalytics.analysis.human_count, userAnalytics.analysis.total_count),
+                                count: userAnalytics.analysis.human_count || 0
                               }
                             ],
                             columns: [
@@ -141,13 +154,13 @@ export default function DashboardPage() {
                             data: [
                               {
                                 type: 'AI',
-                                percentage: Math.round((userAnalytics.analysis.ai_count / userAnalytics.analysis.total_count) * 100),
-                                count: userAnalytics.analysis.ai_count
+                                percentage: safePercent(userAnalytics.analysis.ai_count, userAnalytics.analysis.total_count),
+                                count: userAnalytics.analysis.ai_count || 0
                               },
                               {
                                 type: 'Human',
-                                percentage: Math.round((userAnalytics.analysis.human_count / userAnalytics.analysis.total_count) * 100),
-                                count: userAnalytics.analysis.human_count
+                                percentage: safePercent(userAnalytics.analysis.human_count, userAnalytics.analysis.total_count),
+                                count: userAnalytics.analysis.human_count || 0
                               }
                             ],
                             columns: [
@@ -162,13 +175,13 @@ export default function DashboardPage() {
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-4">
                         <span className="text-accent-3 text-2xl font-bold">
-                          {Math.round((userAnalytics.analysis.ai_count / userAnalytics.analysis.total_count) * 100)}%
+                          {safePercent(userAnalytics.analysis.ai_count, userAnalytics.analysis.total_count)}%
                         </span>
                         <span className="text-muted">AI</span>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-accent-1 text-2xl font-bold">
-                          {Math.round((userAnalytics.analysis.human_count / userAnalytics.analysis.total_count) * 100)}%
+                          {safePercent(userAnalytics.analysis.human_count, userAnalytics.analysis.total_count)}%
                         </span>
                         <span className="text-muted">Human</span>
                       </div>
@@ -183,15 +196,15 @@ export default function DashboardPage() {
               {userAnalytics && (
                 <>
                   <ProductivityCard
-                    kpi={userAnalytics.analysis.avg_confidence * 100}
+                    kpi={(userAnalytics.analysis.avg_confidence || 0) * 100}
                     slices={[
-                      { label: 'AI', value: userAnalytics.analysis.ai_count },
-                      { label: 'Human', value: userAnalytics.analysis.human_count },
+                      { label: 'AI', value: userAnalytics.analysis.ai_count || 0 },
+                      { label: 'Human', value: userAnalytics.analysis.human_count || 0 },
                     ]}
                   />
                   <CompletedTasksCard
-                    total={userAnalytics.analysis.total_count}
-                    percent={(userAnalytics.analysis.ai_count / userAnalytics.analysis.total_count) * 100}
+                    total={userAnalytics.analysis.total_count || 0}
+                    percent={safeFraction(userAnalytics.analysis.ai_count, userAnalytics.analysis.total_count)}
                     series={getDayOfWeekAnalytics()}
                   />
                   <RecentActivityFeed />

@@ -17,11 +17,11 @@ const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
-const AnalyzePage = lazy(() => import('@/pages/AnalyzePage'));
+import AnalysisPage from '@/pages/AnalysisPage';
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
-const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
-const PricingPage = lazy(() => import('@/pages/PricingPage'));
-const BillingPage = lazy(() => import('@/pages/BillingPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const BillingPage = lazy(() => import('./pages/BillingPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
 const AboutPage = lazy(() => import('@/pages/AboutPage'));
@@ -29,7 +29,6 @@ const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const ApiKeysPage = lazy(() => import('@/pages/ApiKeysPage'));
-const AnalyzeProPage = lazy(() => import('@/pages/AnalyzeProPage'));
 const ShobeisPage = lazy(() => import('@/pages/ShobeisPage'));
 
 // Loading component for lazy-loaded pages
@@ -63,9 +62,17 @@ function App() {
             path: 'pricing', 
             element: <PricingPage /> 
           },
-          { 
-            path: 'analyze', 
-            element: <AnalyzePage /> // Public version with limited features
+          {
+            path: 'analysis',
+            element: <PrivateRoute><AnalysisPage /></PrivateRoute>
+          },
+          {
+            path: 'analysis/history',
+            element: <PrivateRoute><HistoryPage /></PrivateRoute>
+          },
+          {
+            path: 'history',
+            element: <PrivateRoute><HistoryPage /></PrivateRoute>
           },
           { 
             path: 'contact', 
@@ -114,14 +121,7 @@ function App() {
             path: 'profile',
             element: <PrivateRoute requireVerified><ProfilePage /></PrivateRoute>
           },
-          { 
-            path: 'history', 
-            element: <PrivateRoute><HistoryPage /></PrivateRoute>
-          },
-          {
-            path: 'analyze-pro',
-            element: <PrivateRoute allowTrial><AnalyzeProPage /></PrivateRoute>
-          },
+          // History and Analyze-pro are now under /analysis/* routes
           
           // Protected routes - require verified email
           { 
