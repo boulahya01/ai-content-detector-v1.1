@@ -19,8 +19,8 @@ def create_test_pro_user(db: Session):
         id=user_id,
         email="pro.test@aidetector.com",
         password_hash=get_password_hash("Test123!@#"),
-        role=UserRole.PRO,
-        subscription_tier="pro",
+        user_type=UserRole.PRO.value,
+        subscription_status="active",
         shobeis_balance=5000,
         bonus_balance=0,
         monthly_refresh_amount=1000,
@@ -43,10 +43,10 @@ def create_test_pro_user(db: Session):
     
     # Define transaction types with their frequencies and amounts
     tx_types = [
-        (TransactionType.TEXT_ANALYSIS, -20, 0.4),  # 40% chance, costs 20 tokens
+        (TransactionType.CHARGE, -20, 0.4),  # 40% chance, costs 20 tokens
         (TransactionType.PURCHASE, 1000, 0.1),      # 10% chance, adds 1000 tokens
         (TransactionType.MONTHLY_REFRESH, 1000, 0.05), # 5% chance, monthly refresh
-        (TransactionType.REFERRAL_BONUS, 100, 0.05)   # 5% chance, referral bonus
+        (TransactionType.BONUS, 100, 0.05)   # 5% chance, bonus
     ]
     
     while current_date <= end_date:
@@ -72,12 +72,10 @@ def create_test_pro_user(db: Session):
             tx = ShobeisTransaction(
                 id=str(uuid.uuid4()),
                 user_id=user_id,
-                transaction_type=tx_type.value,
+                transaction_type=tx_type,
                 amount=amount,
                 balance_before=balance,
                 balance_after=balance + amount,
-                bonus_balance_before=0,
-                bonus_balance_after=0,
                 description=f"Test {tx_type.value.lower()} transaction",
                 meta={
                     'test_data': True,
