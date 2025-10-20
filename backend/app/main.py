@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Import routers
 from app.api import auth, analytics, analyze, shobeis
+from app.api import subscriptions
 
 
 # Minimal FastAPI app focused on auth testing
@@ -34,6 +35,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 app.include_router(analyze.router, prefix="/api", tags=["analysis"])
 app.include_router(shobeis.router, prefix="/api/shobeis", tags=["shobeis"])
+app.include_router(subscriptions.router, prefix="/api", tags=["subscriptions"])
 
 # Admin routes (optional)
 try:
