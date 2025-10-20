@@ -11,10 +11,13 @@ export interface User {
   email: string;
   first_name?: string;
   last_name?: string;
+  name?: string;
   created_at: string;
   credits: number;
   avatar?: string;
+  avatarUrl?: string;
   is_active: boolean;
+  role?: 'user' | 'admin';
 }
 
 export interface AuthResponse {
