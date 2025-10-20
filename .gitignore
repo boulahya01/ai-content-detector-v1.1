@@ -32,3 +32,10 @@ logs/
 *.db.bak*
 backend/*.db
 backend/*.db.bak*
+
+# Temporary and test files
+backend/app/models/tokenizer_test.py
+backend/uvicorn.out
+json
+run_flow_remote.py
+sys
