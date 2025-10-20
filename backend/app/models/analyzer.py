@@ -1,23 +1,46 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import numpy as np
-from typing import Dict, List, Optional
+import gc
+from typing import Dict, List, Optional, Any
 import re
 import logging
 import os
+import time
+import json
 from torch.nn.functional import softmax
 from pathlib import Path
 import tempfile
+import traceback
 from functools import lru_cache
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
+@contextmanager
+def torch_memory_management():
+    """Context manager for torch memory management."""
+    try:
+        # Clear GPU cache if available
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            gc.collect()
+        yield
+    finally:
+        # Always clean up
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            gc.collect()
+
 class AIContentAnalyzer:
-    def __init__(self, model_name: str = "roberta-base-openai-detector", use_cache: bool = True, quantize: bool = True):
+    def __init__(self, model_name: str = "roberta-large-openai-detector", use_cache: bool = True, quantize: bool = True):
+        self._initialize(model_name, use_cache, quantize)
+            
+    def _initialize(self, model_name: str, use_cache: bool, quantize: bool):
+        # Lazy initialization method to handle any potential errors during __init__
         """Initialize the AI Content Analyzer with a specific model.
         
         Args:
-            model_name: Name of the pre-trained model to use. Defaults to RoBERTa model fine-tuned for AI text detection.
+            model_name: Name of the pre-trained model to use. Defaults to RoBERTa large model fine-tuned for AI text detection.
             use_cache: Whether to use model caching to disk.
             quantize: Whether to use quantized model for reduced memory usage.
         """
@@ -33,48 +56,15 @@ class AIContentAnalyzer:
             self.models = {}
             self.tokenizers = {}
             
-            # Initialize a lightweight dummy tokenizer/model to keep tests fast and deterministic
-            class DummyTokenizer:
-                def __call__(self, texts, return_tensors=None, truncation=True, max_length=512, padding=True):
-                    # Return simple torch tensors compatible with downstream code
-                    # Support single string or list of strings
-                    if isinstance(texts, str):
-                        seq_len = min(8, max(1, len(texts.split())))
-                        input_ids = torch.ones((1, seq_len), dtype=torch.long)
-                        attention_mask = torch.ones((1, seq_len), dtype=torch.long)
-                    else:
-                        batch_size = len(texts)
-                        seq_len = 8
-                        input_ids = torch.ones((batch_size, seq_len), dtype=torch.long)
-                        attention_mask = torch.ones((batch_size, seq_len), dtype=torch.long)
-                    return {"input_ids": input_ids, "attention_mask": attention_mask}
-
-            class DummyModel:
-                is_dummy = True
-                def __init__(self):
-                    pass
-                def __call__(self, **kwargs):
-                    # Return a lightweight outputs object with logits
-                    input_ids = kwargs.get('input_ids')
-                    batch = input_ids.shape[0]
-                    # small random logits to produce deterministic-ish outputs
-                    logits = torch.zeros((batch, 2), dtype=torch.float)
-                    class Out:
-                        def __init__(self, logits):
-                            self.logits = logits
-                            self.attentions = None
-                    return Out(logits)
-
-            self.tokenizer = DummyTokenizer()
-            
-            # Determine device
+            # Initialize but don't load model yet - will be loaded explicitly
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             logger.info(f"Device set to {self.device}")
             
-            # Lazy load the model - set a simple dummy model by default
-            self.model = DummyModel()
-            self.model_loaded = True
-            
+            # Initialize components for deferred model loading
+            self.tokenizer = None
+            self.model = None
+            self.model_loaded = False
+
             # Initialize language detector
             from ..utils.language_detector import LanguageDetector
             self.lang_detector = LanguageDetector()
@@ -83,38 +73,190 @@ class AIContentAnalyzer:
             logger.error(f"Failed to initialize analyzer: {str(e)}")
             raise
 
-    def _load_model(self, model_name: str = None):
-        """Load a model (or keep dummy) - signature accepts optional model_name for compatibility."""
-        # For testing and lightweight operation we keep the dummy model by default.
-        if getattr(self, 'model_loaded', False):
-            return
-        # Attempt to load a real model only if explicitly requested
-        if model_name and model_name != self.model_name:
-            self.model_name = model_name
-
+    def _load_model(self, model_name: Optional[str] = None):
+        """Load the AI detection model with enhanced error handling and caching."""
+        # Lazy-import transformers to avoid heavy imports at module import time
         try:
-            # Try to instantiate tokenizer and model from transformers if available and permitted
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-            self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, num_labels=2)
-            self.model.to(self.device)
-            self.model.eval()
-            self.model_loaded = True
-            logger.info("Loaded real model")
-        except Exception:
-            # Fallback: keep simple dummy implementations
-            class DummyTokenizer:
-                def __call__(self, texts, return_tensors=None, truncation=True, max_length=512, padding=True):
-                    return {"_dummy": True, "texts": texts}
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification
+        except Exception as e:
+            # Re-raise with clearer message
+            logger.error(f"Failed to import transformers: {e}")
+            raise
+        try:
+            # Update model name if specified
+            if model_name:
+                self.model_name = model_name
+            elif not self.model_name:
+                # Default to the OpenAI detector model
+                self.model_name = "roberta-large-openai-detector"
+                logger.info(f"No model specified, using {self.model_name}")
 
-            class DummyModel:
-                is_dummy = True
-                def __init__(self):
+            # Configure model paths and cache
+            model_cache_dir = self.cache_dir / "models" / self.model_name
+            tokenizer_cache_dir = self.cache_dir / "tokenizers" / self.model_name
+            model_cache_dir.mkdir(parents=True, exist_ok=True)
+            tokenizer_cache_dir.mkdir(parents=True, exist_ok=True)
+
+            # Log system info for debugging
+            self._log_system_info()
+            
+            # Clear CUDA cache if using GPU
+            self._clear_gpu_memory()
+
+            # Clear any existing model to ensure fresh load
+            if hasattr(self, 'model'):
+                try:
+                    del self.model
+                except AttributeError:
                     pass
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                gc.collect()
 
-            self.tokenizer = DummyTokenizer()
-            self.model = DummyModel()
-            self.model_loaded = True
-            logger.info("Using dummy model/tokenizer as fallback")
+            # Reset model loaded state
+            self.model_loaded = False
+            
+                        # Direct tokenizer loading without caching layer
+            logger.info(f"Loading tokenizer from {self.model_name}")
+            try:
+                # Load tokenizer with minimal configuration
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    self.model_name,
+                    cache_dir=str(tokenizer_cache_dir),
+                    local_files_only=False
+                )
+                
+                logger.info("Initial tokenizer load successful")
+                
+                # Run basic verification
+                test_input = "This is a test sentence."
+                test_output = self.tokenizer(
+                    test_input,
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                    max_length=512
+                )
+                logger.info("Tokenizer verification successful")
+            except Exception as e:
+                logger.error(f"Failed to load or verify tokenizer: {str(e)}")
+                raise
+            try:
+                logger.info("Loading the model...")
+                
+                self.model = AutoModelForSequenceClassification.from_pretrained(
+                    self.model_name,
+                    cache_dir=str(model_cache_dir),
+                    local_files_only=False,
+                    num_labels=2,
+                    trust_remote_code=True
+                )
+                
+                # Move to device and prepare for inference
+                self.model = self.model.to(self.device)
+                self.model.eval()
+                
+                # Basic verification
+                test_input = "Testing model initialization."
+                tokens = self.tokenizer(
+                    test_input,
+                    return_tensors="pt",
+                    truncation=True,
+                    max_length=512,
+                    padding=True
+                )
+                tokens = {k: v.to(self.device) for k, v in tokens.items()}
+                
+                with torch.no_grad():
+                    outputs = self.model(**tokens)
+                    logits = outputs.logits
+                    
+                if logits.shape != (1, 2):
+                    raise ValueError(f"Unexpected output shape: {logits.shape}")
+                    
+                self.model_loaded = True
+                logger.info("Model initialization successful")
+                    
+            except Exception as e:
+                logger.error(f"Model initialization failed: {str(e)}")
+                self.model_loaded = False
+                raise
+            # The model loading process is handled below in the retry logic section
+
+            # Proceed with model loading - using retry logic
+            success = False
+            for attempt in range(3):
+                try:
+                    logger.info(f"Loading model from {self.model_name} (attempt {attempt + 1}/3)")
+                    
+                    # Load the model
+                    self.model = AutoModelForSequenceClassification.from_pretrained(
+                        self.model_name,
+                        cache_dir=str(model_cache_dir),
+                        local_files_only=False,
+                        num_labels=2,
+                        trust_remote_code=True
+                    )
+                    
+                    # Move to device and set eval mode
+                    self.model = self.model.to(self.device)
+                    self.model.eval()
+                    
+                    # Optimize model if requested
+                    if self.quantize and self.device.type == "cuda":
+                        logger.info("Quantizing model for GPU...")
+                        self.model = self.model.half()
+                        
+                    # Test forward pass with tokenized input
+                    test_input = "Test sentence for model verification."
+                    tokens = self.tokenizer(test_input, return_tensors="pt")
+                    tokens = {k: v.to(self.device) for k, v in tokens.items()}
+                    
+                    with torch.no_grad():
+                        outputs = self.model(**tokens)
+                        if not hasattr(outputs, 'logits'):
+                            raise ValueError("Model output missing logits")
+                        if outputs.logits.shape != (1, 2):
+                            raise ValueError(f"Unexpected output shape: {outputs.logits.shape}")
+                    
+                    # Mark as successfully loaded
+                    success = True
+                    logger.info("Model successfully loaded and verified")
+                    break
+                    
+                except Exception as e:
+                    error_msg = str(e)
+                    if attempt < 2:  # Still have retries left
+                        logger.warning(f"Model load attempt {attempt + 1} failed: {error_msg}")
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                        gc.collect()
+                        time.sleep(2)  # Wait between retries
+                    else:  # Final attempt failed
+                        logger.error(f"All model load attempts failed: {error_msg}")
+                        raise RuntimeError(f"Failed to initialize model: {error_msg}")
+            
+            # Final verification and setup
+            if success:
+                try:
+                    self.model_loaded = True
+                    # Remove dummy flag if present
+                    if hasattr(self.model, 'is_dummy'):
+                        delattr(self.model, 'is_dummy')
+                    
+                    logger.info(f"Successfully loaded and verified model {self.model_name} on {self.device}")
+                    if torch.cuda.is_available():
+                        logger.info(f"Final CUDA memory usage: {torch.cuda.memory_allocated() / 1024 / 1024:.2f}MB")
+                        
+                except Exception as e:
+                    logger.error(f"Final model verification failed: {str(e)}")
+                    self.model_loaded = False
+                    raise
+            
+        except Exception as e:
+            logger.error(f"Failed to load model {self.model_name}: {str(e)}", exc_info=True)
+            self.model_loaded = False
+            raise RuntimeError(f"Failed to initialize AI detection model: {str(e)}")
 
     def preprocess_text(self, text: str) -> str:
         """Preprocess text before analysis.
@@ -171,9 +313,32 @@ class AIContentAnalyzer:
                 logger.warning(f"Language {detected_lang} not fully supported, falling back to base model")
                 model_name = self.model_name
 
-            # Ensure appropriate model is loaded
-            if not self.model_loaded or (is_supported and model_name not in self.models):
-                self._load_model(model_name)
+            # Ensure appropriate model is loaded (deferred)
+            if not self.model_loaded or self.model is None or self.tokenizer is None:
+                try:
+                    self._load_model()
+                except Exception as e:
+                    logger.error(f"Model loading failed: {str(e)}")
+                    # Return a fallback result for placeholder text
+                    return {
+                        "prediction": "ERROR",
+                        "confidence": 0.0,
+                        "authenticityScore": 0.0,
+                        "analysisDetails": {
+                            "aiProbability": 0.0,
+                            "humanProbability": 0.0,
+                            "textLength": len(processed_text.split()),
+                            "indicators": []
+                        },
+                        "languageInfo": {
+                            "detected": None,
+                            "confidence": 0.0,
+                            "supported": False,
+                            "metrics": {},
+                            "characteristics": {}
+                        },
+                        "error": f"Model loading failed: {str(e)}"
+                    }
 
             # Get language-specific metrics
             lang_metrics = self.lang_detector.get_language_specific_metrics(processed_text, detected_lang)
@@ -189,13 +354,19 @@ class AIContentAnalyzer:
             )
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
+            # Ensure model is available
+            current_model = self.models.get(model_name, self.model)
+            if current_model is None:
+                raise RuntimeError("No model available for inference")
+                
             # Get model prediction with optimized inference
             with torch.no_grad(), torch.cuda.amp.autocast() if self.device.type == "cuda" else self.nullcontext():
-                model = self.models.get(model_name, self.model)
-                outputs = model(**inputs)
+                outputs = current_model(**inputs)
                 logits = outputs.logits
                 probabilities = softmax(logits, dim=1)
-                human_prob, ai_prob = probabilities[0].cpu().numpy()
+                # Convert numpy types to Python floats
+                human_prob = float(probabilities[0, 0].item())
+                ai_prob = float(probabilities[0, 1].item())
 
             # Calculate confidence and indicators
             prediction_confidence = float(max(human_prob, ai_prob))
@@ -307,7 +478,7 @@ class AIContentAnalyzer:
 
         # Combine metrics
         complexity_score = (length_variation / 10 + structure_variation) / 2
-        return min(1.0, complexity_score)
+        return float(min(1.0, complexity_score))
 
     def _analyze_language_naturalness(self, text: str) -> float:
         """Analyze natural language characteristics.
@@ -333,7 +504,7 @@ class AIContentAnalyzer:
 
         # Combine metrics
         naturalness_score = (vocab_diversity + min(1.0, freq_variation / 5)) / 2
-        return min(1.0, naturalness_score)
+        return float(min(1.0, naturalness_score))
 
     def _analyze_style_consistency(self, text: str) -> float:
         """Analyze writing style consistency.
@@ -356,7 +527,9 @@ class AIContentAnalyzer:
         punct_pattern = [len(re.findall(r'[,.!?;]', s)) for s in sentences]
         punct_consistency = 1.0 - (np.std(punct_pattern) / max(max(punct_pattern), 1))
 
-        return (start_diversity + punct_consistency) / 2
+        # Convert numpy types to Python float 
+        result: float = float((start_diversity + punct_consistency) / 2)
+        return result
 
     def _get_sentence_variation(self, text: str) -> float:
         """Calculate sentence length variation."""
@@ -425,7 +598,7 @@ class AIContentAnalyzer:
             len(re.findall(r'[!?]', s)) / max(len(s.split()), 1)
             for s in sentences
         ]
-        return 1.0 - min(1.0, np.std(tone_markers))
+        return float(1.0 - min(1.0, np.std(tone_markers)))
 
     def _detect_style_patterns(self, text: str) -> Dict:
         """Detect common style patterns in text."""
@@ -463,6 +636,9 @@ class AIContentAnalyzer:
             processed_texts = [self.preprocess_text(text) for text in batch_texts]
             
             # Tokenize batch
+            if not self.tokenizer:
+                raise ValueError("Tokenizer is not initialized")
+                
             inputs = self.tokenizer(
                 processed_texts,
                 return_tensors="pt",
@@ -474,6 +650,8 @@ class AIContentAnalyzer:
             
             # Get predictions for batch
             with torch.no_grad(), torch.cuda.amp.autocast() if self.device.type == "cuda" else self.nullcontext():
+                if self.model is None:
+                    raise RuntimeError("Model not loaded")
                 outputs = self.model(**inputs)
                 logits = outputs.logits
                 probabilities = softmax(logits, dim=1)
@@ -502,6 +680,60 @@ class AIContentAnalyzer:
                 })
         
         return results
+
+    def _verify_tokenizer(self) -> None:
+        """Verify tokenizer functionality with comprehensive tests."""
+        try:
+            # Test basic tokenization
+            test_input = "This is a test sentence for tokenizer verification."
+            tokens = self.tokenizer(test_input, return_tensors="pt")
+            
+            # Verify required outputs
+            required_keys = {"input_ids", "attention_mask"}
+            if not all(key in tokens for key in required_keys):
+                raise ValueError(f"Tokenizer missing required outputs: {required_keys - set(tokens.keys())}")
+                
+            # Verify tensor shapes
+            if tokens["input_ids"].ndim != 2:
+                raise ValueError(f"Unexpected input_ids shape: {tokens['input_ids'].shape}")
+                
+            # Test special token handling
+            special_tokens = {
+                "pad_token": self.tokenizer.pad_token,
+                "cls_token": getattr(self.tokenizer, "cls_token", None),
+                "sep_token": getattr(self.tokenizer, "sep_token", None)
+            }
+            if not any(special_tokens.values()):
+                raise ValueError("No special tokens found in tokenizer")
+                
+            logger.info("Tokenizer verification completed successfully")
+            
+        except Exception as e:
+            logger.error(f"Tokenizer verification failed: {str(e)}")
+            raise ValueError(f"Tokenizer verification failed: {str(e)}")
+
+    def _log_system_info(self) -> None:
+        """Log detailed system information for debugging."""
+        logger.info("System Configuration:")
+        logger.info(f"PyTorch version: {torch.__version__}")
+        logger.info(f"CUDA available: {torch.cuda.is_available()}")
+        
+        if torch.cuda.is_available():
+            logger.info(f"CUDA version: {torch.version.cuda}")
+            logger.info(f"CUDA device: {torch.cuda.get_device_name()}")
+            logger.info(f"CUDA memory allocated: {torch.cuda.memory_allocated() / 1024 / 1024:.2f}MB")
+            logger.info(f"CUDA memory reserved: {torch.cuda.memory_reserved() / 1024 / 1024:.2f}MB")
+            
+        logger.info(f"Model name: {self.model_name}")
+        logger.info(f"Cache directory: {self.cache_dir}")
+        logger.info(f"Using quantization: {self.quantize}")
+
+    def _clear_gpu_memory(self) -> None:
+        """Clear GPU memory and garbage collect."""
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            gc.collect()
+            logger.info("Cleared GPU memory and garbage collected")
 
     @staticmethod
     def nullcontext():

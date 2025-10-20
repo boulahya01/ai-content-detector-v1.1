@@ -34,10 +34,6 @@ from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
-    # Relationships
-    blacklisted_tokens = relationship("BlacklistedToken", back_populates="user")
-    transactions = relationship("ShobeisTransaction", back_populates="user", lazy="dynamic")
-    analytics = relationship("UserAnalytics", back_populates="user", lazy="dynamic")
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
@@ -74,6 +70,11 @@ class User(Base):
     last_activity = Column(DateTime, nullable=True)
 
     # Relationships
+
+    # Relationships
+    blacklisted_tokens = relationship("BlacklistedToken", back_populates="user", lazy="dynamic")
+    transactions = relationship("ShobeisTransaction", back_populates="user", lazy="dynamic")
+    analytics = relationship("UserAnalytics", back_populates="user", lazy="dynamic")
 
     __table_args__ = (
         CheckConstraint('shobeis_balance >= 0', name='shobeis_balance_check'),
