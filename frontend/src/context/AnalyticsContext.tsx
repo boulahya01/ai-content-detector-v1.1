@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { analyticsService, UserAnalytics, SystemAnalytics } from '@/api/analytics';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'react-hot-toast';
 
 interface AnalyticsContextType {
   userAnalytics: UserAnalytics | null;
@@ -16,24 +17,8 @@ interface AnalyticsContextType {
 const AnalyticsContext = createContext<AnalyticsContextType | undefined>(undefined);
 
 export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Default analytics for basic users (free credits, others 0)
-  const defaultUserAnalytics: UserAnalytics = {
-    user: {
-      id: '',
-      subscription_tier: 'free',
-      credits_used: 0,
-      credits_total: 5,
-    },
-    analysis: {
-      total_count: 0,
-      ai_count: 0,
-      human_count: 0,
-      avg_confidence: 0,
-      avg_processing_time: 0,
-    },
-    api_usage: [],
-  };
-  const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(defaultUserAnalytics);
+  // Start with null so UI waits for real API data instead of showing hardcoded placeholders
+  const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(null);
   const [systemAnalytics, setSystemAnalytics] = useState<SystemAnalytics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,8 +41,10 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const data = await analyticsService.getUserAnalytics(user.id);
       setUserAnalytics(data);
     } catch (err) {
-      setError('Failed to fetch user analytics');
-      console.error(err);
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'Failed to fetch user analytics';
+      setError(msg);
+      toast.error(msg);
+      console.error('fetchUserAnalytics error:', err);
     } finally {
       setLoading(false);
     }
@@ -70,8 +57,10 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const data = await analyticsService.getSystemAnalytics();
       setSystemAnalytics(data);
     } catch (err) {
-      setError('Failed to fetch system analytics');
-      console.error(err);
+      const msg = (err as any)?.response?.data?.message || (err as any)?.message || 'Failed to fetch system analytics';
+      setError(msg);
+      toast.error(msg);
+      console.error('fetchSystemAnalytics error:', err);
     } finally {
       setLoading(false);
     }

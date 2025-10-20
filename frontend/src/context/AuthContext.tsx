@@ -22,6 +22,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
+  updateProfile: (data: { name?: string; email?: string; currentPassword?: string; newPassword?: string; }) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -91,7 +92,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('access_token');
       setUser(null);
       setIsAuthenticated(false);
-      window.location.href = '/login';
+      // Use react-router's navigate instead of window.location
+      return;
+    }
+  };
+
+  const updateProfile = async (data: {
+    name?: string;
+    email?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) => {
+    const { name, email, currentPassword, newPassword } = data;
+    
+    if (currentPassword && newPassword) {
+      await authApi.changePassword(currentPassword, newPassword);
+    }
+
+    if (name || email) {
+      const userData = await authApi.updateProfile({
+        first_name: name ? name.split(' ')[0] : undefined,
+        last_name: name ? name.split(' ').slice(1).join(' ') : undefined,
+        email,
+      });
+      updateUser(userData);
     }
   };
 
@@ -103,7 +127,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       logout,
-      updateUser
+      updateUser,
+      updateProfile
     }}>
       {children}
     </AuthContext.Provider>

@@ -16,8 +16,10 @@ interface AnalysisContextType {
   analyzeText: (text: string) => Promise<AnalysisResult>;
   analyzeFile: (file: File) => Promise<AnalysisResult>;
   clearCurrentAnalysis: () => void;
-  fetchHistory: () => Promise<void>;
+  fetchHistory: (options?: { filter?: string; timeRange?: string }) => Promise<AnalysisResult[]>;
   deleteHistoryItem: (id: string) => Promise<void>;
+  clearHistory: () => Promise<void>;
+  fetchAnalysisById: (id: string) => Promise<AnalysisResult>;
 }
 
 const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined);
@@ -70,7 +72,8 @@ export const AnalysisProvider: React.FC<AnalysisProviderProps> = ({ children }) 
     setProgress({ status: 'processing', percent: 0, message: 'Starting analysis...' });
     
     try {
-      const response = await analysisService.analyzeText({ content });
+  // mark this as a non-billable test analysis from the interactive UI
+  const response = await analysisService.analyzeText({ content, is_test: true });
       const { analysisId } = response.data;
 
       wsManager.subscribeToAnalysis(analysisId, handleAnalysisProgress);
@@ -140,12 +143,15 @@ export const AnalysisProvider: React.FC<AnalysisProviderProps> = ({ children }) 
     setError(null);
   }, []);
 
-  const fetchHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async (options?: { filter?: string; timeRange?: string }) => {
     try {
-      const response = await analysisService.getHistory();
-      setAnalysisHistory(response.data.items);
+      const response = await analysisService.getHistory(options);
+      const items = response.data.items;
+      setAnalysisHistory(items);
+      return items;
     } catch (err) {
       setError(err as Error);
+      throw err;
     }
   }, []);
 
@@ -155,6 +161,27 @@ export const AnalysisProvider: React.FC<AnalysisProviderProps> = ({ children }) 
       setAnalysisHistory(prev => prev.filter(item => item.id !== id));
     } catch (err) {
       setError(err as Error);
+      throw err;
+    }
+  }, []);
+
+  const clearHistory = useCallback(async () => {
+    try {
+      await analysisService.clearHistory();
+      setAnalysisHistory([]);
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    }
+  }, []);
+
+  const fetchAnalysisById = useCallback(async (id: string): Promise<AnalysisResult> => {
+    try {
+      const response = await analysisService.getAnalysisById(id);
+      return response.data;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
     }
   }, []);
 
@@ -169,6 +196,8 @@ export const AnalysisProvider: React.FC<AnalysisProviderProps> = ({ children }) 
     clearCurrentAnalysis,
     fetchHistory,
     deleteHistoryItem,
+    clearHistory,
+    fetchAnalysisById,
   };
 
   return (
