@@ -9,6 +9,8 @@ export interface AnalyzeTextRequest {
     detailed?: boolean;
     threshold?: number;
   };
+  // mark this as a non-billable test analysis (frontend set to true for interactive tests)
+  is_test?: boolean;
 }
 
 export interface AnalyzeFileRequest {
@@ -32,7 +34,8 @@ export const analysisService = {
     try {
       const response = await api.post<ApiResponse<AnalysisResult>>('/analyze', data);
       return response.data;
-    } catch {
+    } catch (err: any) {
+      console.error('Text analysis error', err?.response?.data || err.message || err);
       throw new Error('Failed to analyze text content');
     }
   },

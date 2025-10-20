@@ -41,20 +41,19 @@ export interface SystemAnalytics {
 export const analyticsService = {
   async getUserAnalytics(userId: string): Promise<UserAnalytics> {
     try {
-      const response = await api.get(`/analytics/user/${userId}`);
+    const response = await api.get(`/analytics/user/${userId}`);
       return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user analytics:', error);
+    } catch (error: any) {
+      // Let caller decide how to surface errors (context/components will show toasts)
       throw error;
     }
   },
 
   async getSystemAnalytics(): Promise<SystemAnalytics> {
     try {
-      const response = await api.get('/analytics/system/status');
+  const response = await api.get('/analytics/system/status');
       return response.data;
-    } catch (error) {
-      console.error('Failed to fetch system analytics:', error);
+    } catch (error: any) {
       throw error;
     }
   },
@@ -66,13 +65,12 @@ export const analyticsService = {
     processingTime: number
   ): Promise<void> {
     try {
-      await api.post(`/analytics/track/${userId}`, {
+  await api.post(`/analytics/track/${userId}`, {
         is_ai: isAi,
         confidence,
         processing_time: processingTime
       });
-    } catch (error) {
-      console.error('Failed to track analysis:', error);
+    } catch (error: any) {
       throw error;
     }
   },
@@ -84,13 +82,12 @@ export const analyticsService = {
     success: boolean
   ): Promise<void> {
     try {
-      await api.post(`/analytics/track/api/${userId}`, {
+  await api.post(`/analytics/track/api/${userId}`, {
         endpoint,
         response_time: responseTime,
         success
       });
-    } catch (error) {
-      console.error('Failed to track API usage:', error);
+    } catch (error: any) {
       throw error;
     }
   }

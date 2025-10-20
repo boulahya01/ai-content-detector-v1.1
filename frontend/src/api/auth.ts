@@ -30,31 +30,78 @@ export interface VerificationResponse {
 }
 
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
-  const formData = new URLSearchParams();
-  formData.append('username', credentials.username);
-  formData.append('password', credentials.password);
+  const params = new URLSearchParams();
+  params.append('username', credentials.username);
+  params.append('password', credentials.password);
+  params.append('grant_type', 'password');
 
   try {
-    const response = await api.post('/auth/login', formData.toString(), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+    console.log('Attempting login with credentials:', {
+      username: credentials.username,
+      grant_type: 'password'
     });
-    return response.data;
+
+    const response = await api.post('/auth/login', params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+
+    if (response.data && response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+      console.log('Login successful');
+      return response.data;
+    }
+    throw new Error('Invalid response from server');
   } catch (error: any) {
-    throw new Error(error.response?.data?.detail || 'Login failed');
+    console.error('Login error:', error);
+    
+    const errorMessage = error.response?.data?.detail || 
+                        error.response?.data?.message || 
+                        error.message || 
+                        'Login failed. Please try again.';
+    
+    if (error.response?.status === 401) {
+      throw new Error('Invalid email or password');
+    } else if (error.response?.status === 429) {
+      throw new Error('Too many login attempts. Please try again later.');
+    } else {
+      throw new Error(errorMessage);
+    }
   }
 }
 
 export async function register(data: RegisterData): Promise<AuthResponse> {
   try {
+    console.log('Attempting registration with data:', {
+      email: data.email,
+      first_name: data.first_name,
+      last_name: data.last_name
+    });
+
     const response = await api.post('/auth/register', data);
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.data?.detail) {
-      throw new Error(error.response.data.detail);
+    
+    if (response.data && response.data.id) {
+      console.log('Registration successful');
+      return response.data;
     }
-    throw new Error('Registration failed');
+    throw new Error('Invalid response from server');
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    
+    const errorMessage = error.response?.data?.detail || 
+                        error.response?.data?.message ||
+                        error.message || 
+                        'Registration failed. Please try again.';
+    
+    if (error.response?.status === 400) {
+      // Handle validation errors
+      if (error.response.data.detail?.includes('Email already registered')) {
+        throw new Error('This email is already registered');
+      } else if (error.response.data.detail?.includes('Password')) {
+        throw new Error(error.response.data.detail);
+      }
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 

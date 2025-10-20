@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface RetryConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -15,6 +15,11 @@ declare module 'axios' {
   interface AxiosRequestConfig {
     _retry?: boolean;
   }
+}
+
+// Add runtime check for API URL
+if (!baseURL) {
+  console.error('API URL is not configured. Please check your environment variables.');
 }
 
 console.log('API Base URL:', baseURL);
