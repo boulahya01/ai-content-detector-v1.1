@@ -65,63 +65,53 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
                 <div className="px-4 py-6">
                   <div className="space-y-6">
                     {/* Main Navigation */}
-                    <div>
-                      <div className="mb-2">
-                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          {user ? 'Main Menu' : 'Navigation'}
-                        </h3>
-                      </div>
-                      <div className="space-y-1">
-                        {(user ? navigation.private : navigation.public).map((item) => {
-                          const isActive = window.location.pathname === item.href;
-                          return (
-                            <Link
-                              key={item.name}
-                              to={item.href}
-                              onClick={onClose}
-                              className={cn(
-                                'block px-4 py-2 text-base font-medium',
-                                isActive
-                                  ? 'text-accent-500'
-                                  : 'text-gray-900 hover:text-accent-500',
-                                'transition-colors'
-                              )}
-                            >
-                              {item.name}
-                            </Link>
-                          );
-                        })}
-                      </div>
+                    <div className="space-y-1">
+                      <Link
+                        to="/dashboard"
+                        onClick={onClose}
+                        className="block px-4 py-2 text-base font-medium text-gray-900 hover:text-accent-500 transition-colors"
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/analysis/new"
+                        onClick={onClose}
+                        className="block px-4 py-2 text-base font-medium text-gray-900 hover:text-accent-500 transition-colors"
+                      >
+                        Analysis
+                      </Link>
+                      <Link
+                        to="/analysis/history"
+                        onClick={onClose}
+                        className="block px-4 py-2 text-base font-medium text-gray-900 hover:text-accent-500 transition-colors"
+                      >
+                        History
+                      </Link>
                     </div>
 
-                    {/* User Menu (only for logged in users) */}
+                    {/* Account Settings */}
                     {user && (
                       <div>
                         <div className="mb-2">
-                          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4">
                             Account
                           </h3>
                         </div>
                         <div className="space-y-1">
-                          {navigation.userMenu.map((item) => {
-                            const isActive = window.location.pathname === item.href;
-                            return (
-                              <Link
-                                key={item.name}
-                                to={item.href}
-                                onClick={onClose}
-                                className={cn(
-                                  'block px-4 py-2 text-base font-medium',
-                                  isActive
-                                    ? 'text-accent-500'
-                                    : 'text-gray-900 hover:text-accent-500',
-                                  'transition-colors'
-                                )}
-                              >
-                                {item.name}
-                              </Link>
-                            );
-                          })}
+                          <Link
+                            to="/profile"
+                            onClick={onClose}
+                            className="block px-4 py-2 text-base font-medium text-gray-900 hover:text-accent-500 transition-colors"
+                          >
+                            Profile
+                          </Link>
+                          <Link
+                            to="/settings"
+                            onClick={onClose}
+                            className="block px-4 py-2 text-base font-medium text-gray-900 hover:text-accent-500 transition-colors"
+                          >
+                            Settings
+                          </Link>
                         </div>
                       </div>
                     )}

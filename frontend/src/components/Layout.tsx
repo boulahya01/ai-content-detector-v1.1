@@ -14,7 +14,7 @@ const navigation = {
   ],
   private: [
     { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Analyze', href: '/analyze' },
+    { name: 'Analysis', href: '/analysis' },
     { name: 'History', href: '/history' },
   ],
   account: [
@@ -66,10 +66,10 @@ const navigation = {
     ],
     userFeatures: [
       { name: 'Dashboard', href: '/dashboard', requiresAuth: true },
-      { name: 'Analysis History', href: '/history', requiresAuth: true },
+      { name: 'Analysis', href: '/analysis', requiresAuth: true },
+      { name: 'History', href: '/history', requiresAuth: true },
       { name: 'API Keys', href: '/api-keys', requiresAuth: true },
-      { name: 'Usage Stats', href: '/stats', requiresAuth: true },
-      { name: 'Custom Reports', href: '/reports', requiresAuth: true }
+      { name: 'Usage Stats', href: '/dashboard', requiresAuth: true }
     ],
     resources: [
       { name: 'Documentation', href: '/documentation' },
@@ -187,7 +187,7 @@ export function Layout() {
 
                   {/* Quick Analysis Button */}
                   <Link
-                    to="/analyze"
+                    to="/analysis"
                     className="hidden md:inline-flex items-center px-4 py-2 
                               text-sm font-medium rounded-lg
                               bg-accent-500 text-white
@@ -342,7 +342,7 @@ export function Layout() {
         {/* Mobile Quick Action Button */}
         <div className="fixed right-4 bottom-20">
           <Link
-            to="/analyze"
+            to="/analysis"
             className="flex items-center justify-center w-12 h-12 rounded-full 
                       bg-white text-black shadow-lg 
                       hover:bg-white/90

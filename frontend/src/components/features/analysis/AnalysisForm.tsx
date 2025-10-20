@@ -3,7 +3,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { useAnalyzer } from '@/hooks/useAnalyzer';
 import type { AnalysisResult } from '@/types/api';
-import { useAuth } from '@/context/AuthContext';
+// useAuth previously used to gate free truncation; not needed for test analysis flow
 
 interface AnalysisFormProps {
   onAnalysisComplete: (result: AnalysisResult) => void;
@@ -13,7 +13,7 @@ interface AnalysisFormProps {
 
 const sanitize = (input: string) => input.replace(/\s+$/g, '');
 
-// Mirror free-plan limit used on HomePage
+// Universal free test analysis character limit
 const FREE_CHAR_LIMIT = 2000;
 
 const AnalysisForm: React.FC<AnalysisFormProps> = ({
@@ -50,9 +50,9 @@ const AnalysisForm: React.FC<AnalysisFormProps> = ({
         value={content}
         onChange={(e) => {
           let v = e.target.value || '';
-          // enforce free limit for anonymous users
-          if (!user && v.length > FREE_CHAR_LIMIT) {
-            v = v.slice(0, FREE_CHAR_LIMIT);
+          // allow users to type up to the free test limit
+          if (v.length > FREE_CHAR_LIMIT) {
+            // do not auto-truncate; just keep full value but UI will prevent submission
           }
           setContent(v);
         }}
@@ -62,17 +62,17 @@ const AnalysisForm: React.FC<AnalysisFormProps> = ({
       />
 
       <div className="flex items-center justify-between text-sm text-gray-500">
-        <div className={content.length >= FREE_CHAR_LIMIT ? 'text-red-600' : 'text-gray-500'}>
+        <div className={content.length > FREE_CHAR_LIMIT ? 'text-red-600' : 'text-gray-500'}>
           {content.length} / {FREE_CHAR_LIMIT} chars
         </div>
-        {content.length >= FREE_CHAR_LIMIT && (
-          <div className="text-red-600">Free limit reached — log in or upgrade to analyze longer content.</div>
+        {content.length > FREE_CHAR_LIMIT && (
+          <div className="text-red-600">Text exceeds free test limit (2000 chars). Please shorten to continue.</div>
         )}
       </div>
 
       <Button
         type="submit"
-        disabled={isLoading || !content.trim()}
+        disabled={isLoading || !content.trim() || content.length > FREE_CHAR_LIMIT}
         className="w-full"
       >
         {isLoading ? 'Analyzing...' : 'Analyze Text'}

@@ -30,12 +30,12 @@ export function PrivateRoute({
   }
 
   // Email verification check
-  if (requireVerified && !user.emailVerified) {
+  if (requireVerified && !user.is_active) {
     return <Navigate to="/verify-email" state={{ from: location.pathname }} replace />;
   }
 
-  // Trial/Guest access check
-  if (!allowTrial && user.role === 'trial') {
+  // Pro access check
+  if (!allowTrial && location.pathname.includes('/pro') && (!user.role || user.role === 'user')) {
     return <Navigate to="/pricing" state={{ from: location.pathname }} replace />;
   }
 
