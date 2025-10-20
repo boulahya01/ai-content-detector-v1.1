@@ -228,7 +228,7 @@ class DocumentProcessor:
         try:
             if isinstance(file_content, bytes):
                 file_content = io.BytesIO(file_content)
-                
+
             with pdfplumber.open(file_content) as pdf:
                 pages = []
                 full_text = []
@@ -237,79 +237,72 @@ class DocumentProcessor:
                 total_tables = 0
                 total_images = 0
                 total_fonts = set()
-                
-                # Process pages in chunks
-                for i in range(0, len(pdf.pages), chunk_size):
-                    chunk_pages = pdf.pages[i:i + chunk_size]
-                    chunk_text = []
-                    
-                    for page_num, page in enumerate(chunk_pages, i + 1):
-                        # Extract text with enhanced error handling
-                        try:
-                            page_text = page.extract_text() or ""
-                        except Exception as e:
-                            logger.warning(f"Error extracting text from page {page_num}: {str(e)}")
-                            page_text = ""
-                            
-                        # Extract tables
-                        try:
-                            tables = page.extract_tables()
-                            page_tables = len(tables) if tables else 0
-                        except Exception as e:
-                            logger.warning(f"Error extracting tables from page {page_num}: {str(e)}")
-                            page_tables = 0
-                            
-                        # Extract images
-                        try:
-                            images = page.images
-                            page_images = len(images) if images else 0
-                        except Exception as e:
-                            logger.warning(f"Error extracting images from page {page_num}: {str(e)}")
-                            page_images = 0
-                            
-                        # Update statistics
-                        total_tables += page_tables
-                        total_images += page_images
-                        total_chars += len(page_text)
-                        words = len(page_text.split())
-                        total_words += words
-                        
-                        # Collect font information
-                        if hasattr(page, '_page_fonts'):
-                            total_fonts.update(font.get('name') for font in page._page_fonts)
-                        
-                        # Create page info
-                        page_info = {
-                            "page_number": page_num,
-                            "text": page_text,
-                            "width": page.width,
-                            "height": page.height,
-                            "tables": page_tables,
-                            "images": page_images,
-                            "words": words,
-                            "characters": len(page_text)
-                        }
-                        
-                        pages.append(page_info)
-                        chunk_text.append(page_text)
-                    
-                    # Process chunk text
-                    full_text.extend(chunk_text)
-                    
-                    # Free up memory
-                    del chunk_text
-                    
-                # Extract enhanced metadata
+
+                for page_num, page in enumerate(pdf.pages, start=1):
+                    # Extract text
+                    page_text = ""
+                    try:
+                        extracted = page.extract_text()
+                        if extracted:
+                            page_text = str(extracted)
+                    except Exception as e:
+                        logger.warning(f"Error extracting text from page {page_num}: {e}")
+
+                    # Extract tables
+                    page_tables = 0
+                    try:
+                        tables = page.extract_tables()
+                        if tables:
+                            page_tables = len(tables)
+                    except Exception as e:
+                        logger.warning(f"Error extracting tables from page {page_num}: {e}")
+
+                    # Extract images
+                    page_images = 0
+                    try:
+                        images = getattr(page, 'images', None)
+                        page_images = len(images) if images else 0
+                    except Exception as e:
+                        logger.warning(f"Error extracting images from page {page_num}: {e}")
+
+                    # Fonts (best-effort)
+                    try:
+                        if hasattr(page, '_page_fonts') and page._page_fonts:
+                            total_fonts.update(f.get('name') for f in page._page_fonts if isinstance(f, dict) and 'name' in f)
+                    except Exception:
+                        pass
+
+                    # Metrics
+                    total_tables += page_tables
+                    total_images += page_images
+                    total_chars += len(page_text)
+                    words = len(page_text.split()) if page_text else 0
+                    total_words += words
+
+                    page_info = {
+                        "page_number": page_num,
+                        "text": page_text,
+                        "width": getattr(page, 'width', None),
+                        "height": getattr(page, 'height', None),
+                        "tables": page_tables,
+                        "images": page_images,
+                        "words": words,
+                        "characters": len(page_text)
+                    }
+
+                    pages.append(page_info)
+                    full_text.append(page_text)
+
                 metadata = {
                     "document_info": {
-                        "producer": pdf.metadata.get('Producer', 'Unknown'),
-                        "creator": pdf.metadata.get('Creator', 'Unknown'),
-                        "creation_date": pdf.metadata.get('CreationDate', 'Unknown'),
-                        "modification_date": pdf.metadata.get('ModDate', 'Unknown'),
-                        "author": pdf.metadata.get('Author', 'Unknown'),
-                        "title": pdf.metadata.get('Title', 'Unknown'),
-                        "subject": pdf.metadata.get('Subject', 'Unknown'),
-                        "keywords": pdf.metadata.get('Keywords', 'Unknown'),
+                        "producer": getattr(pdf.metadata, 'get', lambda k, d: d)('Producer', 'Unknown') if pdf.metadata else 'Unknown',
+                        "creator": getattr(pdf.metadata, 'get', lambda k, d: d)('Creator', 'Unknown') if pdf.metadata else 'Unknown',
+                        "creation_date": getattr(pdf.metadata, 'get', lambda k, d: d)('CreationDate', 'Unknown') if pdf.metadata else 'Unknown',
+                        "modification_date": getattr(pdf.metadata, 'get', lambda k, d: d)('ModDate', 'Unknown') if pdf.metadata else 'Unknown',
+                        "author": getattr(pdf.metadata, 'get', lambda k, d: d)('Author', 'Unknown') if pdf.metadata else 'Unknown',
+                        "title": getattr(pdf.metadata, 'get', lambda k, d: d)('Title', 'Unknown') if pdf.metadata else 'Unknown',
+                        "subject": getattr(pdf.metadata, 'get', lambda k, d: d)('Subject', 'Unknown') if pdf.metadata else 'Unknown',
+                        "keywords": getattr(pdf.metadata, 'get', lambda k, d: d)('Keywords', 'Unknown') if pdf.metadata else 'Unknown',
                     },
                     "statistics": {
                         "pages": len(pdf.pages),
@@ -318,25 +311,25 @@ class DocumentProcessor:
                         "tables": total_tables,
                         "images": total_images,
                         "fonts": list(total_fonts),
-                        "average_words_per_page": total_words / len(pdf.pages) if pdf.pages else 0
+                        "average_words_per_page": (total_words / len(pdf.pages)) if pdf.pages else 0
                     },
                     "formatting": {
                         "page_size": {
-                            "width": pdf.pages[0].width if pdf.pages else None,
-                            "height": pdf.pages[0].height if pdf.pages else None
+                            "width": getattr(pdf.pages[0], 'width', None) if pdf.pages else None,
+                            "height": getattr(pdf.pages[0], 'height', None) if pdf.pages else None
                         }
                     }
                 }
-                
+
                 return {
-                    "text": "\n\n".join(full_text),
+                    "text": "\n\n".join([p for p in full_text if p]),
                     "metadata": metadata,
                     "pages": pages
                 }
-                
+
         except Exception as e:
-            logger.error(f"Error processing PDF file: {str(e)}")
-            raise ValueError(f"Failed to process PDF file: {str(e)}")
+            logger.error(f"Error processing PDF file: {e}")
+            raise ValueError(f"Failed to process PDF file: {e}")
 
     def process_document(self, file_path: Union[str, Path]) -> Dict[str, Union[str, Dict]]:
         """Process document and extract text based on file type.
