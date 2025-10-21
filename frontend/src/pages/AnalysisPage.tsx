@@ -29,6 +29,7 @@ export default function AnalysisPage() {
   const [language, setLanguage] = useState('auto');
   const [analysisMode, setAnalysisMode] = useState<'single' | 'bulk'>('single');
   const [batchTexts, setBatchTexts] = useState<string[]>(['']);
+  const [showDetails, setShowDetails] = useState(false);
 
   const isPro = user?.role === 'pro';
 
@@ -269,76 +270,68 @@ export default function AnalysisPage() {
           <div className="space-y-6">
             <div className="bg-white/5 rounded-lg p-6 border border-white/10">
               <h2 className="text-lg font-medium text-white/90 mb-4">Analysis Results</h2>
-              <div className="flex items-center gap-6 mb-4">
-                <RadialChart value={result.authenticityScore} size={140} stroke={12} label="Authenticity" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
-                      <div className="text-sm text-white/60">Authenticity Score</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-semibold text-white/90">{result.aiProbability}%</div>
-                      <div className="text-sm text-white/60">AI Probability</div>
-                    </div>
+
+              {/* Compact summary: show AI vs Human. Details are collapsible */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex-1 grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-white/6 text-center">
+                    <div className="text-sm text-white/60">AI Probability</div>
+                    <div className="text-2xl font-bold text-white/90">{result.aiProbability}%</div>
                   </div>
-                  <div className="h-2 rounded-full bg-white/10 mt-4">
-                    <div
-                      className={`h-2 rounded-full ${result.authenticityScore >= 80 ? 'bg-[#10b981]' : 'bg-[#ef4444]'}`}
-                      style={{ width: `${result.authenticityScore}%` }}
-                    />
+                  <div className="p-4 rounded-lg bg-white/6 text-center">
+                    <div className="text-sm text-white/60">Human Authenticity</div>
+                    <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
                   </div>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    className="px-3 py-2 rounded-md bg-white/5 text-white/80 hover:bg-white/10"
+                    onClick={() => setShowDetails(s => !s)}
+                    aria-expanded={showDetails}
+                  >
+                    {showDetails ? 'Hide details' : 'Show details'}
+                  </button>
                 </div>
               </div>
-              
-              <div className="space-y-6">
-                {/* Score */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className={`text-2xl font-bold ${
-                      result.authenticityScore >= 80 ? 'text-[#10b981]' : 'text-[#ef4444]'
-                    }`}>
-                      {result.authenticityScore}%
-                    </div>
-                    <div className="text-sm text-white/60">
-                      Authenticity Score
+
+              {showDetails && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-6 mb-4">
+                    <RadialChart value={result.authenticityScore} size={140} stroke={12} label="Authenticity" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
+                          <div className="text-sm text-white/60">Authenticity Score</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-white/90">{result.aiProbability}%</div>
+                          <div className="text-sm text-white/60">AI Probability</div>
+                        </div>
+                      </div>
+                      <div className="h-2 rounded-full bg-white/10 mt-4">
+                        <div
+                          className={`h-2 rounded-full ${result.authenticityScore >= 80 ? 'bg-[#10b981]' : 'bg-[#ef4444]'}`}
+                          style={{ width: `${result.authenticityScore}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-lg font-semibold text-white/90">
-                      {result.aiProbability}%
-                    </div>
-                    <div className="text-sm text-white/60">
-                      AI Probability
-                    </div>
+
+                  <div className="space-y-3">
+                    {result.indicators.map((indicator, index) => (
+                      <div key={index}>
+                        <IndicatorCard title={indicator.type} description={indicator.description} confidence={indicator.confidence} />
+                      </div>
+                    ))}
                   </div>
-                </div>
 
-                {/* Progress Bar */}
-                <div className="h-2 rounded-full bg-white/10">
-                  <div
-                    className={`h-2 rounded-full ${
-                      result.authenticityScore >= 80 ? 'bg-[#10b981]' : 'bg-[#ef4444]'
-                    }`}
-                    style={{ width: `${result.authenticityScore}%` }}
-                  />
+                  <button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-white/90 hover:bg-white/10 transition-colors">
+                    <FiDownload className="w-4 h-4" />
+                    <span>Download Report</span>
+                  </button>
                 </div>
-
-                {/* Indicators */}
-                <div className="space-y-3">
-                  {result.indicators.map((indicator, index) => (
-                    <div key={index}>
-                      <IndicatorCard title={indicator.type} description={indicator.description} confidence={indicator.confidence} />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Export Button */}
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-white/90 hover:bg-white/10 transition-colors">
-                  <FiDownload className="w-4 h-4" />
-                  <span>Download Report</span>
-                </button>
-              </div>
+              )}
             </div>
           </div>
         )}

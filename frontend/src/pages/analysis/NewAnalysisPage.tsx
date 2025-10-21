@@ -27,6 +27,7 @@ export default function AnalyzePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [language, setLanguage] = useState('auto');
+  const [showDetails, setShowDetails] = useState(false);
 
   const handleAnalyze = async () => {
     if (!text.trim()) {
@@ -39,57 +40,63 @@ export default function AnalyzePage() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const data = await analyzeTextCtx(text, { language: language === 'auto' ? undefined : language, detailed: true });
-      // Normalize aiProbability: backend may return it at data.aiProbability or data.analysisDetails.aiProbability
-      let rawAiProb: number | undefined = (data as any).aiProbability ?? (data as any).analysisDetails?.aiProbability;
-      // If it's a fraction (0..1), convert to percentage; if already percentage (>1), keep as-is
-      let aiProbabilityPercent = 0;
-      if (typeof rawAiProb === 'number') {
-        aiProbabilityPercent = rawAiProb > 1 ? Math.round(rawAiProb) : Math.round(rawAiProb * 100);
-      }
+        {result && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold text-white/90">Results</h2>
 
-      // Normalize authenticity score: may be provided as fraction (0..1) or percentage
-      let rawAuth = (data as any).authenticityScore ?? (data as any).authenticityScor ?? undefined;
-      let authenticityScorePercent = 0;
-      if (typeof rawAuth === 'number') {
-        authenticityScorePercent = rawAuth > 1 ? Math.round(rawAuth) : Math.round(rawAuth * 100);
-      } else if (aiProbabilityPercent) {
-        authenticityScorePercent = 100 - aiProbabilityPercent;
-      }
+            <div className="p-6 rounded-xl border border-white/10 bg-white/5">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex-1 grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-white/6 text-center">
+                    <div className="text-sm text-white/60">AI Probability</div>
+                    <div className="text-2xl font-bold text-white/90">{result.aiProbability}%</div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-white/6 text-center">
+                    <div className="text-sm text-white/60">Human Authenticity</div>
+                    <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    className="px-3 py-2 rounded-md bg-white/5 text-white/80 hover:bg-white/10"
+                    onClick={() => setShowDetails(s => !s)}
+                    aria-expanded={showDetails}
+                  >
+                    {showDetails ? 'Hide details' : 'Show details'}
+                  </button>
+                </div>
+              </div>
 
-      // Map indicators: backend may provide confidence as fraction (0..1) or percent (0..100)
-      const indicators = (data as any).analysisDetails?.indicators || (data as any).indicators || [];
-      const normalizedIndicators = indicators.map((indicator: any) => {
-        const confRaw = indicator.confidence;
-        let confFraction = 0;
-        if (typeof confRaw === 'number') {
-          confFraction = confRaw > 1 ? confRaw / 100 : confRaw;
-        }
-        return {
-          type: indicator.type,
-          description: indicator.description,
-          confidence: confFraction,
-        };
-      });
+              {showDetails && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg border border-white/10 bg-white/5">
+                    <div className="flex items-center gap-6">
+                      <RadialChart value={result.authenticityScore} size={120} stroke={10} label="Authenticity" />
+                      <div className="flex-1">
+                        <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
+                        <div className="text-sm text-white/60">Authenticity Score</div>
+                        <div className="mt-2 text-sm text-white/60">{result.aiProbability}% AI probability</div>
+                      </div>
+                    </div>
+                  </div>
 
-      setResult({
-        authenticityScore: authenticityScorePercent,
-        confidenceLevel: (data as any).confidence > 0.8 ? 'high' : (data as any).confidence > 0.6 ? 'medium' : 'low',
-        aiProbability: aiProbabilityPercent,
-        indicators: normalizedIndicators,
-      });
-      toast.success('Analysis completed successfully');
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error.message || 'Failed to analyze text';
-      toast.error(errorMessage);
-      if (errorMessage.includes('insufficient balance')) {
-        toast.error('You need more credits to perform this analysis', {
-          action: {
-            label: 'Get Credits',
-            onClick: () => navigate('/pricing')
-          }
+                  <div className="space-y-2">
+                    {result.indicators.map((indicator, index) => (
+                      <IndicatorCard key={index} title={indicator.type} description={indicator.description} confidence={indicator.confidence} />
+                    ))}
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button className="flex items-center space-x-2 px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white/90 hover:bg-white/10 transition-colors">
+                      <FiDownload className="w-4 h-4" />
+                      <span>Download Report</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         });
       }
     } finally {
