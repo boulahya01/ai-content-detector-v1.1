@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalysis } from '@/context/AnalysisContext';
+import RadialChart from '@/components/charts/RadialChart';
+import IndicatorCard from '@/components/IndicatorCard';
 import { toast } from 'sonner';
 import { FiFileText, FiUpload, FiCopy, FiDownload } from 'react-icons/fi';
 import { analysisService } from '@/api/analysis';
@@ -211,31 +213,17 @@ export default function AnalyzePage() {
             <h2 className="text-lg font-semibold text-white/90">Results</h2>
 
             {/* Score Card */}
-            <div className="p-6 rounded-xl border border-white/10 bg-white/5 space-y-4">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent-500/20">
-                  <span className="text-3xl font-bold text-accent-300">
-                    {result.authenticityScore}%
-                  </span>
+            <div className="p-6 rounded-xl border border-white/10 bg-white/5">
+              <div className="flex items-center gap-6">
+                <RadialChart value={result.authenticityScore} size={120} stroke={10} label="Authenticity" />
+                <div className="flex-1">
+                  <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
+                  <div className="text-sm text-white/60">Authenticity Score</div>
+                  <div className="mt-2 text-sm text-white/60">{result.aiProbability}% AI probability</div>
+                  <div className="h-2 rounded-full bg-white/10 mt-4">
+                    <div className="h-2 rounded-full bg-accent-500" style={{ width: `${result.authenticityScore}%` }} />
+                  </div>
                 </div>
-                <h3 className="mt-2 font-medium text-white/90">
-                  Authenticity Score
-                </h3>
-                <p className="text-sm text-white/60">
-                  {result.aiProbability}% AI probability
-                </p>
-              </div>
-
-              <div className="h-2 rounded-full bg-white/10">
-                <div
-                  className="h-2 rounded-full bg-accent-500"
-                  style={{ width: `${result.authenticityScore}%` }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/60">AI-Generated</span>
-                <span className="text-white/60">Human-Written</span>
               </div>
             </div>
 
@@ -243,22 +231,7 @@ export default function AnalyzePage() {
             <div className="space-y-4">
               <h3 className="font-medium text-white/90">Analysis Details</h3>
               {result.indicators.map((indicator, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-lg border border-white/10 bg-white/5"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-white/90">
-                      {indicator.type}
-                    </span>
-                    <span className="text-sm text-white/60">
-                      {(indicator.confidence * 100).toFixed(0)}% confidence
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-white/70">
-                    {indicator.description}
-                  </p>
-                </div>
+                <IndicatorCard key={index} title={indicator.type} description={indicator.description} confidence={indicator.confidence} />
               ))}
             </div>
 

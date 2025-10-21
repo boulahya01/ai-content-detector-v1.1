@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalysis } from '@/context/AnalysisContext';
+import RadialChart from '@/components/charts/RadialChart';
+import IndicatorCard from '@/components/IndicatorCard';
 import { FiFileText, FiUpload, FiCopy, FiDownload } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -267,6 +269,27 @@ export default function AnalysisPage() {
           <div className="space-y-6">
             <div className="bg-white/5 rounded-lg p-6 border border-white/10">
               <h2 className="text-lg font-medium text-white/90 mb-4">Analysis Results</h2>
+              <div className="flex items-center gap-6 mb-4">
+                <RadialChart value={result.authenticityScore} size={140} stroke={12} label="Authenticity" />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
+                      <div className="text-sm text-white/60">Authenticity Score</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-white/90">{result.aiProbability}%</div>
+                      <div className="text-sm text-white/60">AI Probability</div>
+                    </div>
+                  </div>
+                  <div className="h-2 rounded-full bg-white/10 mt-4">
+                    <div
+                      className={`h-2 rounded-full ${result.authenticityScore >= 80 ? 'bg-[#10b981]' : 'bg-[#ef4444]'}`}
+                      style={{ width: `${result.authenticityScore}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
               
               <div className="space-y-6">
                 {/* Score */}
@@ -304,18 +327,8 @@ export default function AnalysisPage() {
                 {/* Indicators */}
                 <div className="space-y-3">
                   {result.indicators.map((indicator, index) => (
-                    <div key={index} className="bg-white/5 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-white/90">
-                          {indicator.type}
-                        </span>
-                        <span className="text-sm text-white/60">
-                          {(indicator.confidence * 100).toFixed(0)}% confidence
-                        </span>
-                      </div>
-                      <p className="text-sm text-white/70">
-                        {indicator.description}
-                      </p>
+                    <div key={index}>
+                      <IndicatorCard title={indicator.type} description={indicator.description} confidence={indicator.confidence} />
                     </div>
                   ))}
                 </div>
