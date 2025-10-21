@@ -1,10 +1,12 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-# Import routers
+
+from fastapi.middleware.cors import CORSMiddleware
+from app.utils.settings import settings
+
+# Import routers (must be before include_router)
 from app.api import auth, analytics, analyze, shobeis
 from app.api import subscriptions
-
 
 # Minimal FastAPI app focused on auth testing
 app = FastAPI(
@@ -12,21 +14,14 @@ app = FastAPI(
     version="1.1.0",
 )
 
-# Configure CORS middleware with secure settings for development
+# Configure CORS middleware using settings
 app.add_middleware(
     CORSMiddleware,
-    # Allow development server origins (multiple ports for Vite)
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", 
-                  "http://localhost:5174", "http://127.0.0.1:5174"],
-    # Allow credentials for authenticated requests
+    allow_origins=settings.frontend_origins,
     allow_credentials=True,
-    # Restrict to necessary HTTP methods
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    # Allow common headers and custom auth headers
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-    # Expose necessary headers to client
     expose_headers=["Content-Length", "Content-Range"],
-    # Cache preflight requests for 1 hour
     max_age=3600,
 )
 
@@ -49,8 +44,17 @@ except Exception:
     pass
 
 # Initialize DB tables after models/router imports to avoid circular import
+
+# Initialize DB tables after models/router imports to avoid circular import
 from app.utils.database import init_db
 init_db()
+
+# Start balance scheduler
+try:
+    from app.utils.scheduler import start_scheduler
+    start_scheduler()
+except Exception as e:
+    print(f"[WARN] Scheduler not started: {e}")
 
 
 @app.get("/")

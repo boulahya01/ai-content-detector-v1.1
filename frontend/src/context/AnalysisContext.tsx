@@ -13,10 +13,10 @@ interface AnalysisContextType {
     percent: number;
     message?: string;
   } | null;
-  analyzeText: (text: string) => Promise<AnalysisResult>;
+  analyzeText: (text: string, options?: any) => Promise<AnalysisResult>;
   analyzeFile: (file: File) => Promise<AnalysisResult>;
   clearCurrentAnalysis: () => void;
-  fetchHistory: (options?: { filter?: string; timeRange?: string }) => Promise<AnalysisResult[]>;
+  fetchHistory: (page?: number, limit?: number) => Promise<AnalysisResult[]>;
   deleteHistoryItem: (id: string) => Promise<void>;
   clearHistory: () => Promise<void>;
   fetchAnalysisById: (id: string) => Promise<AnalysisResult>;
@@ -65,31 +65,49 @@ export const AnalysisProvider: React.FC<AnalysisProviderProps> = ({ children }) 
     }
   }, []);
 
-  const analyzeText = useCallback(async (content: string): Promise<AnalysisResult> => {
-    let progressTimeout: NodeJS.Timeout;
-    setIsAnalyzing(true);
+  const analyzeText = useCallback(async (content: string, options?: any): Promise<AnalysisResult> => {
+  setIsAnalyzing(true);
     setError(null);
     setProgress({ status: 'processing', percent: 0, message: 'Starting analysis...' });
     
     try {
   // mark this as a non-billable test analysis from the interactive UI
-  const response = await analysisService.analyzeText({ content, is_test: true });
-      const { analysisId } = response.data;
+  const payload: any = { content, is_test: true };
+  if (options) payload.options = options;
+  const response = await analysisService.analyzeText(payload);
 
-      wsManager.subscribeToAnalysis(analysisId, handleAnalysisProgress);
-      
-      return new Promise((resolve, reject) => {
-        const checkInterval = setInterval(() => {
-          if (currentAnalysis?.id === analysisId) {
-            clearInterval(checkInterval);
+      // Backend may return the final analysis directly (synchronous)
+  const result = response.data as any;
+  const analysisId = result?.analysisId || result?.id;
+
+  if (!analysisId) {
+        // Synchronous flow: backend returned final result
+        if (result) {
+          setCurrentAnalysis(result as AnalysisResult);
+          setProgress({ status: 'completed', percent: 100, message: 'Analysis complete' });
+          setIsAnalyzing(false);
+          return result as AnalysisResult;
+        }
+        throw new Error('No analysis result returned');
+      }
+
+      // Async flow: subscribe to websocket progress for this analysisId
+      return await new Promise<AnalysisResult>((resolve, reject) => {
+        const handler = (progressData: AnalysisProgress) => {
+          // reuse existing handler logic to update UI
+          handleAnalysisProgress(progressData);
+          if (progressData.status === 'completed' && progressData.result) {
             wsManager.unsubscribeFromAnalysis(analysisId);
-            resolve(currentAnalysis);
-          } else if (!isAnalyzing) {
-            clearInterval(checkInterval);
+            setIsAnalyzing(false);
+            resolve(progressData.result as AnalysisResult);
+          } else if (progressData.status === 'error') {
             wsManager.unsubscribeFromAnalysis(analysisId);
-            if (error) reject(error);
+            setIsAnalyzing(false);
+            reject(new Error(progressData.error || 'Analysis failed'));
           }
-        }, 100);
+        };
+
+        wsManager.subscribeToAnalysis(analysisId, handler);
       });
     } catch (err) {
       const error = err as Error;
@@ -112,23 +130,35 @@ export const AnalysisProvider: React.FC<AnalysisProviderProps> = ({ children }) 
           message: percent < 100 ? 'Uploading file...' : 'Processing file...'
         });
       });
-      
-      const { analysisId } = response.data;
 
-      wsManager.subscribeToAnalysis(analysisId, handleAnalysisProgress);
-      
-      return new Promise((resolve, reject) => {
-        const checkInterval = setInterval(() => {
-          if (currentAnalysis?.id === analysisId) {
-            clearInterval(checkInterval);
+      const result = response.data as any;
+      const analysisId = result?.analysisId || result?.id;
+
+      if (!analysisId) {
+        if (result) {
+          setCurrentAnalysis(result as AnalysisResult);
+          setProgress({ status: 'completed', percent: 100, message: 'Analysis complete' });
+          setIsAnalyzing(false);
+          return result as AnalysisResult;
+        }
+        throw new Error('No analysis result returned');
+      }
+
+      return await new Promise<AnalysisResult>((resolve, reject) => {
+        const handler = (progressData: AnalysisProgress) => {
+          handleAnalysisProgress(progressData);
+          if (progressData.status === 'completed' && progressData.result) {
             wsManager.unsubscribeFromAnalysis(analysisId);
-            resolve(currentAnalysis);
-          } else if (!isAnalyzing) {
-            clearInterval(checkInterval);
+            setIsAnalyzing(false);
+            resolve(progressData.result as AnalysisResult);
+          } else if (progressData.status === 'error') {
             wsManager.unsubscribeFromAnalysis(analysisId);
-            if (error) reject(error);
+            setIsAnalyzing(false);
+            reject(new Error(progressData.error || 'Analysis failed'));
           }
-        }, 100);
+        };
+
+        wsManager.subscribeToAnalysis(analysisId, handler);
       });
     } catch (err) {
       const error = err as Error;
@@ -143,9 +173,9 @@ export const AnalysisProvider: React.FC<AnalysisProviderProps> = ({ children }) 
     setError(null);
   }, []);
 
-  const fetchHistory = useCallback(async (options?: { filter?: string; timeRange?: string }) => {
+  const fetchHistory = useCallback(async (page: number = 1, limit: number = 10) => {
     try {
-      const response = await analysisService.getHistory(options);
+      const response = await analysisService.getHistory(page, limit);
       const items = response.data.items;
       setAnalysisHistory(items);
       return items;

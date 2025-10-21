@@ -53,9 +53,11 @@ class User(Base):
 
     # Balance and usage
     shobeis_balance = Column(Integer, server_default='50', nullable=False)
+    monthly_balance = Column(Integer, server_default='50', nullable=False)
     bonus_balance = Column(Integer, server_default='0', nullable=False)
     monthly_refresh_amount = Column(Integer, server_default='0', nullable=False)
     last_refresh_date = Column(DateTime, nullable=True)
+    next_refresh_date = Column(DateTime, nullable=True)
 
     # Usage tracking
     total_words_analyzed = Column(BigInteger, server_default='0', nullable=False)
@@ -79,6 +81,7 @@ class User(Base):
     __table_args__ = (
         CheckConstraint('shobeis_balance >= 0', name='shobeis_balance_check'),
         CheckConstraint('bonus_balance >= 0', name='bonus_balance_check'),
+        CheckConstraint('monthly_balance >= 0', name='monthly_balance_check'),
     )
 
     def __repr__(self):
@@ -100,9 +103,62 @@ class User(Base):
 
     def has_sufficient_balance(self, amount: int) -> bool:
         """Check if user has sufficient balance for an operation"""
-        current_balance = getattr(self, 'shobeis_balance', 0) or 0
+        monthly_balance = getattr(self, 'monthly_balance', 0) or 0
+        main_balance = getattr(self, 'shobeis_balance', 0) or 0
         bonus_balance = getattr(self, 'bonus_balance', 0) or 0
-        return (current_balance + bonus_balance) >= amount
+        return (monthly_balance + main_balance + bonus_balance) >= amount
+        
+    def deduct_balance(self, amount: int, db) -> bool:
+        """Deduct balance using the order: monthly -> bonus -> main"""
+        if not self.has_sufficient_balance(amount):
+            return False
+            
+        remaining = amount
+        # First use monthly balance
+        monthly_balance = getattr(self, 'monthly_balance', 0) or 0
+        if monthly_balance > 0:
+            deduct_monthly = min(monthly_balance, remaining)
+            self.monthly_balance -= deduct_monthly
+            remaining -= deduct_monthly
+            
+            if deduct_monthly > 0:
+                tx = ShobeisTransaction.create(
+                    db, self,
+                    -deduct_monthly,
+                    TransactionType.MONTHLY_USAGE,
+                    description='Monthly balance usage'
+                )
+                db.add(tx)
+        
+        # Then use bonus balance
+        if remaining > 0:
+            bonus_balance = getattr(self, 'bonus_balance', 0) or 0
+            if bonus_balance > 0:
+                deduct_bonus = min(bonus_balance, remaining)
+                self.bonus_balance -= deduct_bonus
+                remaining -= deduct_bonus
+                
+                if deduct_bonus > 0:
+                    tx = ShobeisTransaction.create(
+                        db, self,
+                        -deduct_bonus,
+                        TransactionType.BONUS_USAGE,
+                        description='Bonus balance usage'
+                    )
+                    db.add(tx)
+        
+        # Finally use main balance
+        if remaining > 0:
+            self.shobeis_balance -= remaining
+            tx = ShobeisTransaction.create(
+                db, self,
+                -remaining,
+                TransactionType.USAGE,
+                description='Main balance usage'
+            )
+            db.add(tx)
+            
+        return True
 
     def get_usage_limits(self) -> Dict[str, Any]:
         """Get usage limits based on user type"""

@@ -261,18 +261,18 @@ class ShobeisService:
         self.db.refresh(tx)
         return tx
 
-    def process_charge(self, user: User, action_type: str, quantity: int = 1, idempotency_key: Optional[str] = None, meta: Optional[Dict[str, Any]] = None) -> ShobeisTransaction:
-        """High-level convenience for charging a user for an action."""
+    def process_charge(self, user: User, action_type: str, quantity: int = 1, idempotency_key: Optional[str] = None, meta: Optional[Dict[str, Any]] = None) -> bool:
+        """High-level convenience for charging a user for an action using new balance logic."""
         cost = self.calculate_cost(action_type, quantity, user)
-        # Debug: log cost and user balances to troubleshoot failing test
         try:
-            print(f"[DEBUG] process_charge: user_id={getattr(user,'id',None)} user_balance={getattr(user,'shobeis_balance',None)} bonus={getattr(user,'bonus_balance',None)} cost={cost}")
+            print(f"[DEBUG] process_charge: user_id={getattr(user,'id',None)} user_balance={getattr(user,'shobeis_balance',None)} monthly={getattr(user,'monthly_balance',None)} bonus={getattr(user,'bonus_balance',None)} cost={cost}")
         except Exception:
             pass
-        tx_meta = {'action_type': action_type, 'quantity': quantity}
-        if meta:
-            tx_meta.update(meta)
-        return self.process_transaction(user=user, amount=-cost, transaction_type=TransactionType.CHARGE, description=f"Charge {action_type}", meta=tx_meta, idempotency_key=idempotency_key)
+        if not user.deduct_balance(cost, self.db):
+            raise InsufficientShobeisError("Insufficient balance (monthly, bonus, and main)")
+        # Optionally, add a transaction record for the charge (already handled in deduct_balance)
+        self.db.commit()
+        return True
 
     def process_refund(self, transaction_id: str, reason: str, meta: Optional[Dict[str, Any]] = None) -> ShobeisTransaction:
         orig = self.db.query(ShobeisTransaction).filter_by(id=transaction_id).first()

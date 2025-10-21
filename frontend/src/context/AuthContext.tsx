@@ -33,7 +33,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleUser = (userData: User) => {
-    setUser(userData);
+    // Map backend fields to frontend user shape.
+    // Backend may return shobeis_balance, monthly_balance, bonus_balance.
+    const mapped: any = { ...userData } as any;
+    // Ensure credits property exists for UI (total available credits)
+    const shobeis = (userData as any).shobeis_balance ?? 0;
+    const monthly = (userData as any).monthly_balance ?? 0;
+    const bonus = (userData as any).bonus_balance ?? 0;
+    mapped.credits = shobeis + monthly + bonus;
+    // Also expose the individual balances so other components can consume them
+    mapped.shobeis_balance = shobeis;
+    mapped.monthly_balance = monthly;
+    mapped.bonus_balance = bonus;
+
+    setUser(mapped as User);
     setIsAuthenticated(true);
   };
 

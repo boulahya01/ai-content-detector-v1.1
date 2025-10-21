@@ -1,3 +1,6 @@
+# Ignore dev/test user scripts (do not deploy to production)
+backend/ensure_pro_user.py
+backend/create_test_user.py
 # Python
 __pycache__/
 *.py[cod]

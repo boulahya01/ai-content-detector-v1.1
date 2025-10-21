@@ -1,6 +1,15 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+function normalizeApiUrl(url: string): string {
+  if (!url) return '';
+  // If the caller provided a URL ending with /api, strip that so services
+  // which include '/api/...' in their paths don't end up with '/api/api/...'.
+  return url.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
+}
+
+// Respect VITE_API_URL as provided (commonly set to include /api). Default to host with /api
+const baseURL = normalizeApiUrl(import.meta.env.VITE_API_URL || 'http://localhost:8000');
 
 interface RetryConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -41,8 +50,11 @@ const getRetryDelay = (retryCount: number): number => {
 
 // Add request interceptor to add auth token
 api.interceptors.request.use((config) => {
+  // Do not attach Authorization header for auth endpoints (login/register/refresh)
+  const url = (config.url || '').toString();
+  const isAuthEndpoint = /\/auth\/(login|register|refresh|google)/.test(url);
   const token = localStorage.getItem('access_token');
-  if (token && config.headers) {
+  if (!isAuthEndpoint && token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -96,7 +108,8 @@ api.interceptors.response.use(
             return Promise.reject(error);
           }
 
-          const response = await api.post('/auth/refresh', null, {
+          // Use the full API auth refresh path — baseURL already points to the API host
+          const response = await api.post('/api/auth/refresh', null, {
             headers: {
               'Authorization': `Bearer ${token}`
             },

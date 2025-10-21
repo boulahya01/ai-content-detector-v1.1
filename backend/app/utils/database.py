@@ -56,70 +56,7 @@ def init_db():
         except Exception as e:
             logger.error(f"Failed to add initial pricing: {e}")
             
-        # Seed pro test user into the main DB as well for tests that hit the primary engine
-        try:
-            from sqlalchemy.orm import sessionmaker
-            from app.models.user import User, UserRole
-            from app.utils.security import get_password_hash
-
-            MainSession = sessionmaker(bind=engine)
-            session = MainSession()
-            if not session.query(User).filter_by(email='pro.test@aidetector.com').first():
-                user = User(
-                    id='pro-test-user-id-main',
-                    email='pro.test@aidetector.com',
-                    password_hash=get_password_hash('Test123!@#'),
-                    role=UserRole.PRO,
-                    subscription_tier='pro',
-                    subscription_plan='pro',
-                    is_active=True,
-                    shobeis_balance=1000,
-                    shobeis_total_allocated=1000,
-                    first_name='Test',
-                    last_name='Pro'
-                )
-                session.add(user)
-                session.commit()
-            session.close()
-        except Exception:
-            logger.debug('Failed to seed pro test user into main DB (ignored)')
-
-        # Also create a test database at ./test.db to support test suites that
-        # create their own engine pointing at sqlite:///./test.db. We always
-        # ensure the schema exists so tests don't fail with "no such table".
-        try:
-            from sqlalchemy import create_engine as _create_engine
-            test_url = 'sqlite:///./test.db'
-            test_engine = _create_engine(test_url, connect_args={"check_same_thread": False})
-            Base.metadata.create_all(bind=test_engine)
-            logger.info("Test database tables created or verified at ./test.db")
-            # Seed a pro test user if not present (used by tests/test_pro_user.py)
-            try:
-                from sqlalchemy.orm import sessionmaker
-                from app.models.user import User, UserRole
-                from app.utils.security import get_password_hash
-
-                TestSession = sessionmaker(bind=test_engine)
-                session = TestSession()
-                if not session.query(User).filter_by(email='pro.test@aidetector.com').first():
-                    user = User(
-                        id='pro-test-user-id',
-                        email='pro.test@aidetector.com',
-                        password_hash=get_password_hash('Test123!@#'),
-                        role=UserRole.PRO,
-                        subscription_tier='pro',
-                        subscription_plan='pro',
-                        is_active=True,
-                        shobeis_balance=1000,
-                        shobeis_total_allocated=1000
-                    )
-                    session.add(user)
-                    session.commit()
-                session.close()
-            except Exception:
-                logger.debug('Failed to seed pro test user into test DB (ignored)')
-        except Exception:
-            logger.debug("Failed to create or verify test DB tables (ignored)")
+        # (Removed hardcoded user seeding. Use /api/auth/register for real users.)
     except Exception as e:
         logger.error(f"Error creating database tables: {e}")
         raise

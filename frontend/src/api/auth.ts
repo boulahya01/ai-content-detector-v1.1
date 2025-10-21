@@ -33,7 +33,6 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
   const params = new URLSearchParams();
   params.append('username', credentials.username);
   params.append('password', credentials.password);
-  params.append('grant_type', 'password');
 
   try {
     console.log('Attempting login with credentials:', {
@@ -41,7 +40,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
       grant_type: 'password'
     });
 
-    const response = await api.post('/auth/login', params, {
+    const response = await api.post('/api/auth/login', params, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
@@ -77,7 +76,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
       last_name: data.last_name
     });
 
-    const response = await api.post('/auth/register', data);
+    const response = await api.post('/api/auth/register', data);
     
     if (response.data && response.data.id) {
       console.log('Registration successful');
@@ -106,12 +105,12 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
 }
 
 export async function loginWithGoogle(credential: string): Promise<AuthResponse> {
-  const response = await api.post('/auth/google', { credential });
+  const response = await api.post('/api/auth/google', { credential });
   return response.data;
 }
 
 export async function refreshAccessToken(token: string): Promise<TokenResponse> {
-  const response = await api.post('/auth/refresh', null, {
+  const response = await api.post('/api/auth/refresh', null, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -120,44 +119,44 @@ export async function refreshAccessToken(token: string): Promise<TokenResponse> 
 }
 
 export async function logout(): Promise<void> {
-  await api.post('/auth/logout');
+  await api.post('/api/auth/logout');
 }
 
 export async function getProfile(): Promise<User> {
-  const response = await api.get('/auth/me');
+  const response = await api.get('/api/auth/me');
   return response.data;
 }
 
 export async function updateProfile(data: Partial<User>): Promise<User> {
-  const response = await api.patch('/auth/me', data);
+  const response = await api.patch('/api/auth/me', data);
   return response.data;
 }
 
 export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
-  await api.post('/auth/change-password', {
+  await api.post('/api/auth/change-password', {
     old_password: oldPassword,
     new_password: newPassword
   });
 }
 
 export async function forgotPassword(email: string): Promise<VerificationResponse> {
-  const response = await api.post('/auth/forgot-password', { email });
+  const response = await api.post('/api/auth/forgot-password', { email });
   return response.data;
 }
 
 export async function resetPassword(token: string, password: string): Promise<void> {
-  await api.post('/auth/reset-password', {
+  await api.post('/api/auth/reset-password', {
     token,
     new_password: password
   });
 }
 
 export async function verifyEmail(token: string): Promise<VerificationResponse> {
-  const response = await api.get(`/auth/verify-email/${token}`);
+  const response = await api.get(`/api/auth/verify-email/${token}`);
   return response.data;
 }
 
 export async function resendVerification(): Promise<VerificationResponse> {
-  const response = await api.post('/auth/resend-verification');
+  const response = await api.post('/api/auth/resend-verification');
   return response.data;
 }

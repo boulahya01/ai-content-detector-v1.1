@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useAnalysis } from '@/context/AnalysisContext';
 import { toast } from 'sonner';
 import { FiFileText, FiUpload, FiCopy, FiDownload } from 'react-icons/fi';
 import { analysisService } from '@/api/analysis';
@@ -19,6 +20,7 @@ interface AnalysisResult {
 export default function AnalyzePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { analyzeText: analyzeTextCtx } = useAnalysis();
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -37,15 +39,7 @@ export default function AnalyzePage() {
 
     setIsLoading(true);
     try {
-      const response = await analysisService.analyzeText({
-        content: text,
-        options: {
-          language: language === 'auto' ? undefined : language,
-          detailed: true
-        }
-      });
-
-      const { data } = response;
+      const data = await analyzeTextCtx(text, { language: language === 'auto' ? undefined : language, detailed: true });
       // Normalize aiProbability: backend may return it at data.aiProbability or data.analysisDetails.aiProbability
       let rawAiProb: number | undefined = (data as any).aiProbability ?? (data as any).analysisDetails?.aiProbability;
       // If it's a fraction (0..1), convert to percentage; if already percentage (>1), keep as-is

@@ -7,11 +7,6 @@ export interface UseAnalysisOptions {
   onError?: (error: Error) => void;
 }
 
-interface FilterOptions {
-  filter?: 'all' | 'ai-detected' | 'human-written';
-  timeRange?: 'all-time' | 'today' | 'this-week' | 'this-month';
-}
-
 export function useAnalysis(options: UseAnalysisOptions = {}) {
   const { onSuccess, onError } = options;
   const [loading, setLoading] = useState(false);
@@ -54,10 +49,11 @@ export function useAnalysis(options: UseAnalysisOptions = {}) {
     }
   }, [context.analyzeFile, onSuccess, onError]);
 
-  const getHistory = useCallback(async (options?: FilterOptions) => {
+  const getHistory = useCallback(async () => {
     setLoading(true);
     try {
-      const results = await context.fetchHistory(options);
+      // For now map filter options to page/limit defaults
+      const results = await context.fetchHistory(1, 10);
       return results;
     } catch (err) {
       const error = err as Error;

@@ -32,11 +32,14 @@ export interface AnalysisHistoryResponse {
 export const analysisService = {
   async analyzeText(data: AnalyzeTextRequest): Promise<ApiResponse<AnalysisResult>> {
     try {
-      const response = await api.post<ApiResponse<AnalysisResult>>('/analyze', data);
+      // Use the explicit API prefix to match backend router (frontend baseURL may include /api)
+      const response = await api.post<ApiResponse<AnalysisResult>>('/api/analyze', data);
       return response.data;
     } catch (err: any) {
-      console.error('Text analysis error', err?.response?.data || err.message || err);
-      throw new Error('Failed to analyze text content');
+      const status = err?.response?.status;
+      const respData = err?.response?.data;
+      console.error('Text analysis error', { status, respData, message: err.message });
+      throw new Error(respData?.message || respData?.error || 'Failed to analyze text content');
     }
   },
 
@@ -52,7 +55,7 @@ export const analysisService = {
         formData.append('options', JSON.stringify(options));
       }
 
-      const response = await api.post<ApiResponse<AnalysisResult>>('/analyze', formData, {
+  const response = await api.post<ApiResponse<AnalysisResult>>('/api/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -83,7 +86,7 @@ export const analysisService = {
 
   async getHistory(page: number = 1, limit: number = 10): Promise<ApiResponse<AnalysisHistoryResponse>> {
     try {
-      const response = await api.get<ApiResponse<AnalysisHistoryResponse>>('/history', {
+  const response = await api.get<ApiResponse<AnalysisHistoryResponse>>('/api/history', {
         params: { page, limit },
       });
       return response.data;
@@ -94,7 +97,7 @@ export const analysisService = {
 
   async getAnalysisById(id: string): Promise<ApiResponse<AnalysisResult>> {
     try {
-      const response = await api.get<ApiResponse<AnalysisResult>>(`/analyze/${id}`);
+  const response = await api.get<ApiResponse<AnalysisResult>>(`/api/analyze/${id}`);
       return response.data;
     } catch {
       throw new Error('Failed to fetch analysis details');
@@ -103,7 +106,7 @@ export const analysisService = {
 
   async deleteHistoryItem(id: string): Promise<void> {
     try {
-      await api.delete(`/history/${id}`);
+  await api.delete(`/api/history/${id}`);
     } catch {
       throw new Error('Failed to delete history item');
     }
@@ -111,7 +114,7 @@ export const analysisService = {
 
   async clearHistory(): Promise<void> {
     try {
-      await api.delete('/history');
+  await api.delete('/api/history');
     } catch {
       throw new Error('Failed to clear history');
     }

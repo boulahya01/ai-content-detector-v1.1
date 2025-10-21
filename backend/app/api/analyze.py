@@ -92,8 +92,8 @@ async def analyze_text(request: Request, current_user=Depends(get_current_user))
             try:
                 sh.process_charge(user=current_user, action_type='word_analysis', quantity=len(text.split()))
             except InsufficientShobeisError as err:
-                logger.warning("Insufficient shobeis for user %s: %s", getattr(current_user, 'id', None), err)
-                raise HTTPException(status_code=402, detail="Insufficient balance")
+                logger.warning("Insufficient balance for user %s: %s", getattr(current_user, 'id', None), err)
+                return JSONResponse(status_code=402, content={"success": False, "error": "Insufficient balance (monthly, bonus, and main)"})
 
         start = time.time()
         result = analyzer.analyze_text(text)

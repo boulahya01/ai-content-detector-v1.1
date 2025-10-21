@@ -1,4 +1,4 @@
-import { AnalysisProgress, AnalysisResult } from '@/types/api';
+import { AnalysisProgress } from '@/types/api';
 
 export type AnalysisEventHandler = (event: AnalysisProgress) => void;
 
@@ -11,10 +11,17 @@ class WebSocketManager {
 
   constructor(private baseUrl: string) {}
 
+  private normalizeWsBase(url: string) {
+    if (!url) return '';
+    // Remove trailing /api if present so ws connects to host-level /ws/analysis
+    return url.replace(/\/api\/?$/, '').replace(/\/$/, '');
+  }
+
   connect() {
     if (this.socket?.readyState === WebSocket.OPEN) return;
 
-    this.socket = new WebSocket(this.baseUrl.replace(/^http/, 'ws') + '/ws/analysis');
+    const wsBase = this.normalizeWsBase(this.baseUrl);
+    this.socket = new WebSocket(wsBase.replace(/^http/, 'ws') + '/ws/analysis');
 
     this.socket.onmessage = (event) => {
       try {

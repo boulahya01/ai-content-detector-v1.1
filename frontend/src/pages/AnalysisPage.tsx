@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useAnalysis } from '@/context/AnalysisContext';
 import { FiFileText, FiUpload, FiCopy, FiDownload } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +20,7 @@ interface AnalysisResult {
 
 export default function AnalysisPage() {
   const { user } = useAuth();
+  const { analyzeText: analyzeTextCtx, isAnalyzing, progress } = useAnalysis();
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -47,9 +49,8 @@ export default function AnalysisPage() {
 
     setIsLoading(true);
     try {
-      const payload = { content: text, options: { language: language === 'auto' ? undefined : language, detailed: true }, is_test: true };
-      const resp = await analysisService.analyzeText(payload as any);
-      const data = resp.data as any;
+      const respResult = await analyzeTextCtx(text, { language: language === 'auto' ? undefined : language, detailed: true });
+      const data = respResult as any;
 
       // Normalize aiProbability
       let rawAiProb: number | undefined = data.aiProbability ?? data.analysisDetails?.aiProbability;

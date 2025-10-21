@@ -14,6 +14,9 @@ class TransactionType(enum.Enum):
     BONUS = "BONUS"
     SIGNUP_BONUS = "SIGNUP_BONUS"
     PURCHASE = "PURCHASE"
+    MONTHLY_USAGE = "MONTHLY_USAGE"
+    BONUS_USAGE = "BONUS_USAGE"
+    USAGE = "USAGE"
 
 
 class TransactionStatus(enum.Enum):
