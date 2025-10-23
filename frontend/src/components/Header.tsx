@@ -1,44 +1,5 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { Menu } from '@headlessui/react';
-import { FiUser, FiLogOut, FiSettings, FiKey } from 'react-icons/fi';
-
-export default function Header() {
-  const { user, logout } = useAuth();
-  const location = useLocation();
-  
-  const isActive = (path: string) => location.pathname === path;
-
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Analysis', href: '/analysis' },
-    { name: 'History', href: '/history' },
-  ];
-
-  const profileMenuItems = [
-    { name: 'Profile', href: '/profile', icon: FiUser },
-    { name: 'API Keys', href: '/api-keys', icon: FiKey },
-    { name: 'Settings', href: '/settings', icon: FiSettings },
-    { 
-      name: 'Logout', 
-      href: '#',
-      icon: FiLogOut,
-      onClick: () => logout(),
-      className: 'text-red-400 hover:text-red-300 hover:bg-red-400/10'
-    },
-  ];
-
-  return (
-    <header className="bg-secondary-900/50 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center">
-              <span className="text-white font-bold">AI</span>
-            </div>
-            <span className="font-semibold text-white">Detector</span>
+export { Header } from '@/components/layout/Header';
+export default Header;
           </Link>
 
           {/* Navigation */}

@@ -33,7 +33,7 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
         </Transition.Child>
 
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="min-h-full bg-white w-full">
+          <div className="min-h-full bg-gray-900/95 w-full backdrop-blur-xl">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -45,13 +45,13 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
             >
               <Dialog.Panel className="w-full h-full">
                 {/* Header */}
-                <div className="border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-                  <Dialog.Title className="text-lg font-semibold text-gray-900">
+                <div className="border-b border-white/10 px-4 py-4 flex items-center justify-between">
+                  <Dialog.Title className="text-lg font-semibold text-white/90">
                     Menu
                   </Dialog.Title>
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500"
+                    className="rounded-md bg-transparent text-white/60 hover:text-white"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close menu</span>
