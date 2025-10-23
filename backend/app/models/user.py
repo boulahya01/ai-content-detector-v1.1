@@ -77,6 +77,7 @@ class User(Base):
     blacklisted_tokens = relationship("BlacklistedToken", back_populates="user", lazy="dynamic")
     transactions = relationship("ShobeisTransaction", back_populates="user", lazy="dynamic")
     analytics = relationship("UserAnalytics", back_populates="user", lazy="dynamic")
+    api_keys = relationship("ApiKey", back_populates="user", lazy="dynamic")
 
     __table_args__ = (
         CheckConstraint('shobeis_balance >= 0', name='shobeis_balance_check'),

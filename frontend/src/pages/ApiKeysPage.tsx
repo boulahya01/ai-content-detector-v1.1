@@ -1,59 +1,78 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-
-interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  createdAt: string;
-  lastUsed: string | null;
-}
+import { useToast } from '@/hooks/useToast';
+import { apiKeyService, type ApiKey } from '@/services/apiKeys';
+import { Loader2 } from 'lucide-react';
 
 export default function ApiKeysPage() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([
-    // TODO: Replace with actual API keys from backend
-    {
-      id: '1',
-      name: 'Development Key',
-      key: 'ai_dev_xxxxxxxxxxxxxxxxxxx',
-      createdAt: '2024-01-15T10:00:00Z',
-      lastUsed: '2024-01-20T15:30:00Z'
-    }
-  ]);
+  const { toast } = useToast();
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchApiKeys = async () => {
+      try {
+        const keys = await apiKeyService.list();
+        setApiKeys(keys);
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load API keys.',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchApiKeys();
+  }, [toast]);
 
   const handleCreateKey = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(true);
 
     try {
-      // TODO: Implement API key creation
-      const newKey = {
-        id: Date.now().toString(),
-        name: newKeyName,
-        key: `ai_${Math.random().toString(36).substring(2)}`,
-        createdAt: new Date().toISOString(),
-        lastUsed: null
-      };
-
+      const newKey = await apiKeyService.create({ name: newKeyName });
       setApiKeys(prev => [...prev, newKey]);
       setShowCreateForm(false);
       setNewKeyName('');
-    } catch (error) {
-      console.error('Failed to create API key:', error);
+      toast({
+        title: 'API Key Created',
+        description: 'Your new API key has been created successfully.'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.detail || 'Failed to create API key.',
+        variant: 'destructive'
+      });
     } finally {
       setIsCreating(false);
     }
   };
 
   const handleDeleteKey = async (id: string) => {
-    // TODO: Implement API key deletion
-    setApiKeys(prev => prev.filter(key => key.id !== id));
+    try {
+      await apiKeyService.delete(id);
+      setApiKeys(prev => prev.filter(key => key.id !== id));
+      toast({
+        title: 'API Key Deleted',
+        description: 'The API key has been deleted successfully.'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete API key.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleCopyKey = async (key: string) => {
