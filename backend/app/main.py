@@ -6,7 +6,7 @@ from app.utils.settings import settings
 
 # Import routers (must be before include_router)
 from app.api import auth, analytics, analyze, shobeis
-from app.api import subscriptions, api_keys
+from app.api import subscriptions, api_keys, notifications
 
 # Minimal FastAPI app focused on auth testing
 app = FastAPI(
@@ -32,6 +32,7 @@ app.include_router(analyze.router, prefix="/api", tags=["analysis"])
 app.include_router(shobeis.router, prefix="/api/shobeis", tags=["shobeis"])
 app.include_router(subscriptions.router, prefix="/api", tags=["subscriptions"])
 app.include_router(api_keys.router, tags=["api-keys"])
+app.include_router(notifications.router, tags=["notifications"])
 
 # Admin routes (optional)
 try:

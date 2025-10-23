@@ -78,6 +78,7 @@ class User(Base):
     transactions = relationship("ShobeisTransaction", back_populates="user", lazy="dynamic")
     analytics = relationship("UserAnalytics", back_populates="user", lazy="dynamic")
     api_keys = relationship("ApiKey", back_populates="user", lazy="dynamic")
+    notification_preferences = relationship("NotificationPreferences", back_populates="user", uselist=False)
 
     __table_args__ = (
         CheckConstraint('shobeis_balance >= 0', name='shobeis_balance_check'),
