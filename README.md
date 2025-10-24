@@ -1,191 +1,195 @@
 # 🤖 THE AI DETECTOR
 
-[![Made with React](https://img.shields.io/badge/Made%20with-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
-[![Powered by FastAPI](https://img.shields.io/badge/Powered%20by-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![ML with PyTorch](https://img.shields.io/badge/ML%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
-[![Database PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org)
+[![PyTorch](https://img.shields.io/badge/ML%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 
-> 🔍 **Advanced AI Content Detection Platform** - Harness the power of cutting-edge machine learning to detect AI-generated content with unparalleled accuracy.
+> 🔍 **Advanced AI Content Detection Platform** powered by state-of-the-art machine learning for unparalleled accuracy in detecting AI-generated content.
 
 ![Dashboard Preview](./screnshots-README/HOME.png)
 
 ## ✨ Key Features
 
-🎯 **High Accuracy Detection**
-- Advanced machine learning models
-- Real-time analysis
-- Multi-language support
-- Confidence scoring
+🎯 **Powerful Detection**
+- State-of-the-art ML models (RoBERTa-based)
+- Multi-language support with confidence scoring
+- Support for text, documents (.txt, .docx)
+- Advanced pattern analysis
 
-⚡ **Lightning Fast Results**
-- Instant text analysis
-- Batch processing
-- File upload support
-- Efficient caching
+⚡ **Fast & Efficient**
+- Real-time content analysis
+- Efficient batch processing
+- Redis-based caching
+- Rate limiting and throttling
 
-🛡️ **Enterprise Ready**
-- Secure authentication
-- API access
-- Usage analytics
-- Team management
+🛡️ **Enterprise-Grade**
+- JWT-based authentication
+- Role-based access control
+- API key management
+- Usage analytics & monitoring
 
-## 📊 Smart Dashboard
+## � User Experience
 
-![Dashboard Features](./screnshots-README/dashboard.png)
+### Modern Dashboard
+![Dashboard](./screnshots-README/dashboard.png)
+- Dark/light theme support
+- Mobile-first responsive design
+- Real-time analytics
+- Interactive data visualization
 
-✨ **Modern Interface**
-- Dark mode support
-- Responsive design
-- Interactive charts
-- Real-time updates
-
-📈 **Analytics & Insights**
-- Usage statistics
-- Detection trends
-- Performance metrics
-- Export capabilities
-
-## 🚀 Getting Started
-
-### Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/boulahya01/the-ai-detector.git
-
-# Install dependencies
-cd the-ai-detector
-npm install    # Frontend
-pip install -r requirements.txt  # Backend
-
-# Start development servers
-npm run dev    # Frontend at http://localhost:5173
-uvicorn app.main:app --reload  # Backend at http://localhost:8000
-```
-
-### Project Structure
-
-```
-the-ai-detector/
-├── frontend/                # React TypeScript application
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   │   ├── analytics/  # Analytics components
-│   │   │   ├── auth/      # Authentication components
-│   │   │   └── common/    # Shared components
-│   │   ├── pages/         # Main application pages
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── api/           # API integration
-│   │   └── utils/         # Utility functions
-│   └── public/            # Static assets
-│
-├── backend/               # FastAPI Python backend
-│   ├── app/
-│   │   ├── api/          # API endpoints
-│   │   ├── models/       # Database models
-│   │   ├── services/     # Business logic
-│   │   └── utils/        # Helper utilities
-│   ├── tests/            # Test suite
-│   └── alembic/          # Database migrations
-│
-└── docs/                 # Documentation
-    ├── api/             # API documentation
-    └── guides/          # User guides
-```
-
-## 🎯 Core Features
-
-### AI Detection Engine
+### Analysis Interface
 ![Analysis](./screnshots-README/analysis.png)
+- Instant AI detection results
+- Detailed confidence metrics
+- Pattern highlighting
+- Export functionality
 
-- **Advanced ML Models**: Powered by state-of-the-art machine learning
-- **High Accuracy**: Precision-tuned detection algorithms
-- **Fast Processing**: Real-time content analysis
-- **Multiple Formats**: Support for text, files, and URLs
-
-### User Management
-![User Management](./screnshots-README/LOGIN.png)
-
-- **Secure Authentication**: JWT-based security
-- **User Roles**: Custom access levels
-- **Team Support**: Collaborate with team members
-- **Usage Tracking**: Monitor API usage
-
-### API Integration
-![API Access](./screnshots-README/api-keys.png)
-
-- **RESTful API**: Clean, well-documented endpoints
-- **API Keys**: Secure access management
-- **Rate Limiting**: Controlled resource usage
-- **Webhooks**: Real-time notifications
+### Authentication
+![Login](./screnshots-README/LOGIN.png)
+- Secure email/password auth
+- OAuth integration
+- Session management
+- Two-factor ready
 
 ## 💻 Technology Stack
 
 ### Frontend
-- **React 18**: Modern UI framework
-- **TypeScript**: Type-safe code
-- **TailwindCSS**: Utility-first styling
-- **React Query**: Data fetching
-- **Vite**: Fast development
+- **React 18** with TypeScript
+- **TailwindCSS** for styling
+- **React Query** for data fetching
+- **Vite** for development
+- **Radix UI** components
 
 ### Backend
-- **FastAPI**: High-performance API
-- **PostgreSQL**: Reliable database
-- **SQLAlchemy**: ORM
-- **PyTorch**: ML framework
-- **Redis**: Caching layer
+- **FastAPI** for API development
+- **PostgreSQL** + SQLAlchemy ORM
+- **PyTorch** + Transformers
+- **Redis** for caching
+- **Alembic** for migrations
 
-## 📱 Mobile Experience
+## 📦 Project Structure
 
-![Mobile UI](./screnshots-README/mobile.png)
+```bash
+ai-content-detector/
+├── frontend/                # React + TypeScript
+│   ├── src/
+│   │   ├── components/     # UI components
+│   │   │   ├── features/   # Feature modules
+│   │   │   ├── layout/     # Layout components
+│   │   │   └── ui/        # Base components
+│   │   ├── pages/         # Route pages
+│   │   ├── context/       # React contexts
+│   │   ├── hooks/         # Custom hooks
+│   │   └── utils/         # Utilities
+│   └── public/            # Static assets
+│
+├── backend/                # FastAPI + Python
+│   ├── app/
+│   │   ├── api/           # API endpoints
+│   │   │   ├── auth.py    # Authentication
+│   │   │   ├── analyze.py # Content analysis
+│   │   │   └── shobeis.py # Credits system
+│   │   ├── models/        # Database models
+│   │   ├── services/      # Business logic
+│   │   └── utils/         # Utilities
+│   ├── tests/             # Test suite
+│   └── migrations/        # DB migrations
+```
 
-- **Responsive Design**: Works on all devices
-- **Touch Optimized**: Mobile-first approach
-- **Offline Support**: PWA capabilities
-- **Fast Loading**: Optimized performance
+## 🚀 Quick Start
 
-## 🔒 Security Features
+### Prerequisites
+- Node.js 16+
+- Python 3.10+
+- PostgreSQL 13+
+- Redis (optional)
 
-- **JWT Authentication**: Secure token-based auth
-- **Rate Limiting**: DDoS protection
-- **Input Validation**: XSS prevention
-- **CORS**: Configured security headers
-- **API Security**: Key-based access
+### Installation
 
-## 📖 Documentation
+```bash
+# Clone repository
+git clone https://github.com/boulahya01/the-ai-detector.git
+cd the-ai-detector
 
-- [User Guide](./docs/guides/getting-started.md)
+# Backend setup
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Frontend setup
+cd frontend
+npm install
+
+# Environment setup
+cp .env.example .env  # Both frontend and backend
+# Update configuration values
+
+# Start servers
+cd backend && uvicorn app.main:app --reload
+cd frontend && npm run dev
+```
+
+Visit `http://localhost:5173` to start using the application.
+
+## ⚙️ Key Features
+
+### Advanced Detection
+![Analysis Interface](./screnshots-README/analysis.png)
+
+- **ML-Powered Analysis**: RoBERTa-based models
+- **Multi-Format Support**: Text, .txt, .docx
+- **Real-time Results**: Instant feedback
+- **Batch Processing**: Handle multiple files
+
+### API Integration
+![API Keys](./screnshots-README/api-keys.png)
+
+- **RESTful API**: Clean endpoints
+- **API Key Management**: Secure access
+- **Rate Limiting**: Usage control
+- **Detailed Documentation**: Clear guides
+
+### User Dashboard
+![Mobile Experience](./screnshots-README/mobile.png)
+
+- **Usage Analytics**: Track detection stats
+- **Mobile Optimized**: Responsive design
+- **Dark Mode**: Theme support
+- **Export Options**: Save results
+
+## 🔒 Security
+
+- JWT authentication
+- Role-based access control
+- Rate limiting
+- Input validation
+- API key security
+- CORS protection
+
+## � Documentation
+
+- [Getting Started](./docs/guides/getting-started.md)
 - [API Reference](./docs/api/README.md)
 - [Contributing](./CONTRIBUTING.md)
 - [Security](./SECURITY.md)
 - [License](./LICENSE)
 
-## 🌟 Premium Features
-
-![Premium Features](./screnshots-README/subscription.png)
-
-✨ **Enterprise Plan**
-- Unlimited API calls
-- Priority support
-- Custom ML models
-- Team management
-- Advanced analytics
-
 ## 🤝 Contributing
 
-We welcome contributions! Please check our [Contributing Guidelines](CONTRIBUTING.md) for details.
+We welcome contributions! See [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[MIT License](./LICENSE)
 
 ---
 
 <p align="center">
-  <a href="https://theaidetector.com">Website</a> •
-  <a href="/docs">Documentation</a> •
-  <a href="/docs/api">API</a> •
-  <a href="https://discord.gg/theaidetector">Discord</a>
+  Made with ❤️ by <a href="https://github.com/boulahya01">boulahya01</a>
 </p>
 1. [Project Overview](#project-overview)
 2. [Architecture](#architecture)
