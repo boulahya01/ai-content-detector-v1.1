@@ -199,7 +199,9 @@ class AnalyticsService:
         analysis_stats = self.session.query(
             func.sum(UserAnalysisStats.total_analyses),
             func.sum(UserAnalysisStats.ai_detected_count),
-            func.avg(UserAnalysisStats.avg_confidence)
+            func.avg(UserAnalysisStats.avg_confidence),
+            func.sum(UserAnalysisStats.total_credits_used),
+            func.sum(UserAnalysisStats.total_content_length)
         ).one()
 
         api_stats = self.session.query(
@@ -209,16 +211,26 @@ class AnalyticsService:
         ).one()
 
         analytics = {
-            "users": {"total": int(user_count)},
+            "users": {
+                "total": int(user_count),
+                "activeToday": self.get_active_users_count("day"),
+                "activeWeek": self.get_active_users_count("week"),
+                "activeMonth": self.get_active_users_count("month")
+            },
             "analysis": {
                 "total": int(analysis_stats[0] or 0),
                 "ai_detected": int(analysis_stats[1] or 0),
                 "avg_confidence": float(analysis_stats[2] or 0),
+                "total_credits_used": int(analysis_stats[3] or 0),
+                "total_content_analyzed": int(analysis_stats[4] or 0),
+                "daily_average": self.get_daily_average_analyses(),
+                "weekly_trend": self.get_weekly_trend()
             },
             "api": {
                 "total_requests": int(api_stats[0] or 0),
                 "success_rate": (float(api_stats[1]) / api_stats[0] * 100) if api_stats[0] else 0,
-                "avg_response_time": float(api_stats[2] or 0)
+                "avg_response_time": float(api_stats[2] or 0),
+                "recent_errors": self.get_recent_errors()
             }
         }
 
@@ -229,3 +241,79 @@ class AnalyticsService:
                 pass
 
         return analytics
+
+    def get_active_users_count(self, period: str) -> int:
+        """Get count of active users for a given period"""
+        now = datetime.utcnow()
+        if period == "day":
+            cutoff = now - timedelta(days=1)
+        elif period == "week":
+            cutoff = now - timedelta(days=7)
+        else:  # month
+            cutoff = now - timedelta(days=30)
+
+        return self.session.query(func.count(UserAnalysisStats.user_id))\
+            .filter(UserAnalysisStats.last_analysis_date >= cutoff)\
+            .scalar() or 0
+
+    def get_daily_average_analyses(self) -> float:
+        """Calculate daily average analyses for the past week"""
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        stats = self.session.query(
+            func.sum(UserAnalysisStats.total_analyses)
+        ).filter(
+            UserAnalysisStats.last_analysis_date >= week_ago
+        ).scalar() or 0
+        return float(stats) / 7
+
+    def get_analytics_trend(self, timeframe: str) -> List[Dict]:
+        """Get analysis trend for a specified timeframe"""
+        now = datetime.utcnow()
+        if timeframe == "24h":
+            cutoff = now - timedelta(hours=24)
+            interval = "hour"
+        elif timeframe == "7d":
+            cutoff = now - timedelta(days=7)
+            interval = "day"
+        elif timeframe == "30d":
+            cutoff = now - timedelta(days=30)
+            interval = "day"
+        else:  # all-time
+            cutoff = None
+            interval = "month"
+
+        query = self.session.query(
+            func.date_trunc(interval, UserAnalysisStats.last_analysis_date).label('date'),
+            func.count(UserAnalysisStats.id).label('count'),
+            func.sum(UserAnalysisStats.total_credits_used).label('credits')
+        )
+
+        if cutoff:
+            query = query.filter(UserAnalysisStats.last_analysis_date >= cutoff)
+
+        daily_stats = query.group_by(
+            func.date_trunc(interval, UserAnalysisStats.last_analysis_date)
+        ).order_by(
+            func.date_trunc(interval, UserAnalysisStats.last_analysis_date)
+        ).all()
+
+        return [{
+            "date": str(stat.date),
+            "analyses": stat.count,
+            "creditsUsed": int(stat.credits or 0)
+        } for stat in daily_stats]
+
+    def get_recent_errors(self) -> List[Dict]:
+        """Get recent API errors"""
+        day_ago = datetime.utcnow() - timedelta(days=1)
+        errors = self.session.query(
+            UserApiUsage.endpoint,
+            func.sum(UserApiUsage.error_count).label('errors')
+        ).filter(
+            UserApiUsage.last_request >= day_ago,
+            UserApiUsage.error_count > 0
+        ).group_by(
+            UserApiUsage.endpoint
+        ).all()
+
+        return [{"endpoint": err.endpoint, "count": err.errors} for err in errors]
