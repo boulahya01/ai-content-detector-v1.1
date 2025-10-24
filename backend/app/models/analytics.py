@@ -16,6 +16,12 @@ class UserAnalysisStats(Base):
     avg_confidence = Column(Numeric(5, 2))
     avg_processing_time = Column(Integer)
     last_analysis_date = Column(DateTime)
+    total_credits_used = Column(Integer, default=0)
+    total_content_length = Column(Integer, default=0)
+    daily_analyses = Column(Integer, default=0)  # Reset daily
+    weekly_analyses = Column(Integer, default=0)  # Reset weekly
+    monthly_analyses = Column(Integer, default=0)  # Reset monthly
+    last_reset_date = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
