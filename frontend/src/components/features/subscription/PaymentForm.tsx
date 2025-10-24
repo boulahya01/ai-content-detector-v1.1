@@ -23,7 +23,43 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     setError(null);
 
     try {
-      // TODO: Implement actual payment processing
+      const { token, error } = await stripe.createToken(elements.getElement('card'));
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      const response = await fetch('/api/subscriptions/payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({
+          token: token.id,
+          planId: selectedPlan,
+          amount: amount * 100, // Convert to cents
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Payment failed');
+      }
+
+      const data = await response.json();
+      
+      if (data.requires_action) {
+        const { error: actionError } = await stripe.handleCardAction(data.payment_intent_client_secret);
+        if (actionError) {
+          throw new Error(actionError.message);
+        }
+      }
+
+      // Payment successful
+      setProcessing(false);
+      toast.success('Payment processed successfully');
+      onSuccess?.(data);
       const paymentMethod = 'pm_card_visa'; // Placeholder
       await onComplete(paymentMethod);
     } catch (err) {

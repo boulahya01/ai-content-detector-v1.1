@@ -26,6 +26,9 @@ export function useShobeisContext() {
   return useContext(ShobeisContext);
 }
 
+// Backwards-compatible alias: some modules import `useShobeis`
+export const useShobeis = useShobeisContext;
+
 interface ShobeisProviderProps {
   children: React.ReactNode;
 }
@@ -50,9 +53,9 @@ export function ShobeisProvider({ children }: ShobeisProviderProps) {
     } catch (err: any) {
       const errorMessage = err.response?.data?.detail || 'Failed to fetch balance';
       setError(errorMessage);
+      // useToast expects { title, description } — keep it simple and consistent
       toast({
-        variant: "destructive",
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
       });
     } finally {

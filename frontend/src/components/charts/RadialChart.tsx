@@ -1,4 +1,5 @@
-import React from 'react';
+import { useId, useMemo } from 'react';
+import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts';
 
 interface RadialChartProps {
   size?: number;
@@ -11,54 +12,52 @@ interface RadialChartProps {
 
 export default function RadialChart({
   size = 120,
-  stroke = 10,
+  stroke = 12,
   value,
-  trackColor = '#111827',
-  progressColor = '#a78bfa',
+  trackColor = 'rgba(255,255,255,0.04)',
+  progressColor = 'var(--accent-500)',
   label,
 }: RadialChartProps) {
-  const radius = (size - stroke) / 2;
-  const cx = size / 2;
-  const cy = size / 2;
-  const circumference = 2 * Math.PI * radius;
-  const clamped = Math.max(0, Math.min(100, value));
-  const offset = circumference - (clamped / 100) * circumference;
+  const id = useId().replace(/:/g, '-');
+  const clamped = Math.max(0, Math.min(100, Math.round(value)));
+
+  const data = useMemo(() => [
+    { name: 'ai', value: clamped, fill: progressColor },
+  ], [clamped, progressColor]);
+
+  // radial chart inner/outer radius as percentages of size
+  const outerRadius = 80; // percent
+  const innerRadius = 60; // percent
 
   return (
-    <div className="inline-flex flex-col items-center">
-      <svg width={size} height={size} className="block">
-        <defs>
-          <linearGradient id="radialGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={progressColor} stopOpacity="1" />
-            <stop offset="100%" stopColor={progressColor} stopOpacity="0.8" />
-          </linearGradient>
-        </defs>
-        <g transform={`translate(${cx}, ${cy})`}>
-          <circle
-            r={radius}
-            cx={0}
-            cy={0}
-            fill="transparent"
-            stroke={trackColor}
-            strokeWidth={stroke}
-            className="opacity-30"
+    <div style={{ width: size, height: size }} className="inline-block relative">
+      <ResponsiveContainer width="100%" height="100%">
+        <RadialBarChart
+          innerRadius={`${innerRadius}%`}
+          outerRadius={`${outerRadius}%`}
+          data={data}
+          startAngle={90}
+          endAngle={-270}
+        >
+          <defs>
+            <linearGradient id={`g-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={progressColor} stopOpacity="1" />
+              <stop offset="100%" stopColor={progressColor} stopOpacity="0.8" />
+            </linearGradient>
+          </defs>
+          <RadialBar
+            dataKey="value"
+            cornerRadius={stroke}
+            background={{ fill: trackColor }}
+            fill={`url(#g-${id})`}
+            isAnimationActive={true}
+            animationDuration={900}
           />
-          <circle
-            r={radius}
-            cx={0}
-            cy={0}
-            fill="transparent"
-            stroke="url(#radialGradient)"
-            strokeWidth={stroke}
-            strokeLinecap="round"
-            strokeDasharray={`${circumference} ${circumference}`}
-            strokeDashoffset={offset}
-            transform="rotate(-90)"
-          />
-        </g>
-      </svg>
-      <div className="mt-2 text-center">
-        <div className="text-xl font-semibold text-white/90">{Math.round(clamped)}%</div>
+        </RadialBarChart>
+      </ResponsiveContainer>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <div className="text-2xl font-extrabold text-white/95">{clamped}%</div>
         {label && <div className="text-xs text-white/60">{label}</div>}
       </div>
     </div>

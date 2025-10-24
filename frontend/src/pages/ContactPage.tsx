@@ -19,7 +19,21 @@ export default function ContactPage() {
     setIsSubmitting(true);
     
     try {
-      // TODO: Implement contact form submission
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, message }),
+      });
+
+      if (response.ok) {
+        toast.success('Message sent successfully!');
+        setName('');
+        setEmail('');
+        setMessage('');
+      } else {
+        throw new Error('Failed to send message');
       await new Promise(resolve => setTimeout(resolve, 1000));
       setIsSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });

@@ -18,19 +18,51 @@ export default function ApiKeysManager() {
   const [newKeyName, setNewKeyName] = useState('');
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
 
+  useEffect(() => {
+    const fetchApiKeys = async () => {
+      try {
+        const response = await fetch('/api/api-keys', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch API keys');
+        }
+
+        const data = await response.json();
+        setApiKeys(data);
+      } catch (error) {
+        toast.error('Failed to load API keys');
+      }
+    };
+
+    fetchApiKeys();
+  }, []);
+
   const createApiKey = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(false);
     setIsLoading(true);
 
     try {
-      // TODO: Implement API call
-      const newKey = {
-        id: Date.now().toString(),
-        name: newKeyName,
-        key: 'sk_test_' + Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString(),
-      };
+      const response = await fetch('/api/api-keys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({
+          name: newKeyName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create API key');
+      }
+
+      const newKey = await response.json();
       setApiKeys([...apiKeys, newKey]);
       toast.success('API key created successfully');
       setNewKeyName('');
@@ -43,7 +75,17 @@ export default function ApiKeysManager() {
 
   const deleteApiKey = async (keyId: string) => {
     try {
-      // TODO: Implement API call
+      const response = await fetch(`/api/api-keys/${keyId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete API key');
+      }
+
       setApiKeys(apiKeys.filter(key => key.id !== keyId));
       toast.success('API key deleted successfully');
     } catch (error) {

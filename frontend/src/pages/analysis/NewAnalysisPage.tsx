@@ -220,7 +220,33 @@ export default function AnalyzePage() {  authenticityScore: number;
 
       const response = await analysisService.getAnalysisById(result.id);      toast.success('Text pasted from clipboard');
 
-      // TODO: Implement report generation and download    } catch (error) {
+      const response = await fetch('/api/analysis/export', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({
+          analysisId,
+          format: 'pdf', // or 'docx'
+        }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analysis-report-${Date.now()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Report downloaded successfully');
+      } else {
+        throw new Error('Failed to generate report');
+      }
+    } catch (error) {
 
       console.log('Download analysis:', response);      toast.error('Failed to paste from clipboard');
 

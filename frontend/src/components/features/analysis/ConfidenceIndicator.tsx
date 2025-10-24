@@ -1,11 +1,14 @@
 type Props = {
-  score: number; // 0..1
+  score: number; // accepts 0..1 or 0..100
   size?: number; // px
   showLabel?: boolean;
 };
 
-export default function ConfidenceIndicator({ score, size = 48, showLabel = true }: Props) {
-  const pct = Math.max(0, Math.min(100, Math.round(score * 100)));
+export default function ConfidenceIndicator({ score, size = 56, showLabel = true }: Props) {
+  // normalize score: if between 0 and 1 treat as fraction
+  let raw = score;
+  if (raw <= 1) raw = raw * 100;
+  const pct = Math.max(0, Math.min(100, Math.round(raw)));
   const stroke = 6;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -23,7 +26,7 @@ export default function ConfidenceIndicator({ score, size = 48, showLabel = true
             cx={0}
             cy={0}
             fill="none"
-            stroke="rgba(255,255,255,0.06)"
+            stroke="rgba(255,255,255,0.04)"
             strokeWidth={stroke}
           />
           <circle
@@ -36,13 +39,13 @@ export default function ConfidenceIndicator({ score, size = 48, showLabel = true
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={offset}
-            style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
+            style={{ transform: 'rotate(-90deg)', transformOrigin: 'center', transition: 'stroke-dashoffset 900ms cubic-bezier(.2,.9,.2,1)' }}
           />
         </g>
       </svg>
       {showLabel && (
         <div className="text-sm text-white/80">
-          <div className="text-base font-semibold">{pct}%</div>
+          <div className="text-lg font-semibold">{pct}%</div>
           <div className="text-xs text-white/60">authenticity</div>
         </div>
       )}

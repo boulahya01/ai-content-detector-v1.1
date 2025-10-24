@@ -20,7 +20,20 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ className }) =
 
     setIsDeleting(true);
     try {
-      // TODO: Implement account deletion
+      const response = await fetch('/api/auth/me', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete account');
+      }
+
+      // Clear all local storage and state
+      localStorage.clear();
+      window.location.href = '/';
       await logout();
     } catch (error) {
       console.error('Failed to delete account:', error);
@@ -55,7 +68,28 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ className }) =
             <Button
               variant="outline"
               className="mt-2"
-              onClick={() => {/* TODO: Implement 2FA setup */}}
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/auth/2fa/setup', {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    },
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('Failed to setup 2FA');
+                  }
+
+                  const { qrCode, secret } = await response.json();
+                  
+                  // Show QR code in modal
+                  // For now we'll just save the secret
+                  localStorage.setItem('2fa_secret', secret);
+                  toast.success('2FA setup completed');
+                } catch (error) {
+                  toast.error('Failed to setup 2FA');
+                }
+              }}
             >
               Enable 2FA
             </Button>

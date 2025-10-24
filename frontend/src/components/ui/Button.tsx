@@ -6,20 +6,20 @@ import { cn } from '@/utils/cn';
 // Button component props are defined in ButtonProps interface below
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
         default:
-          'bg-[color:var(--accent-500)] text-white hover:bg-[color:var(--accent-600)] active:transform active:scale-98',
+          'bg-accent hover:bg-accent-600 active:bg-accent-700 text-accent-foreground shadow-lg hover:shadow-accent-500/25',
         destructive:
-          'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
         outline:
-          'border border-white bg-transparent text-white hover:bg-white/10',
+          'border border-border bg-background hover:bg-muted hover:border-accent-500/50 text-foreground shadow-sm',
         secondary:
-          'bg-white/6 text-white hover:bg-white/10 active:bg-white/12',
-        ghost: 'hover:bg-white/10 text-white',
-        link: 'text-white underline-offset-4 hover:underline',
+          'bg-muted text-muted-foreground hover:bg-muted/80 shadow-sm',
+        ghost: 'hover:bg-muted hover:text-foreground',
+        link: 'text-accent underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-10 px-4 py-2 rounded-xl',

@@ -77,12 +77,12 @@ export default function AccountSettings() {
   };
 
   return (
-    <div className="space-y-8">
+  <div className="space-y-6 text-sm">
       {/* Basic Information */}
       <div>
-        <h3 className="text-lg font-semibold text-white/90 mb-4">Basic Information</h3>
-        <form onSubmit={handleBasicInfoSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="text-base font-semibold text-white/90 mb-3">Basic Information</h3>
+        <form onSubmit={handleBasicInfoSubmit} className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="form-group">
               <div className="relative">
                 <FiUser className={formStyles.inputIcon} />
@@ -91,7 +91,7 @@ export default function AccountSettings() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={formStyles.input}
+                  className={`${formStyles.input} py-2 pl-9 pr-3 text-sm rounded-lg`}
                   placeholder="Full Name"
                 />
               </div>
@@ -104,7 +104,7 @@ export default function AccountSettings() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={formStyles.input}
+                  className={`${formStyles.input} py-2 pl-9 pr-3 text-sm rounded-lg`}
                   placeholder="Email Address"
                 />
               </div>
@@ -115,7 +115,7 @@ export default function AccountSettings() {
               type="submit"
               disabled={isLoading}
               className={formStyles.button}
-              style={{ background: 'var(--accent-500)' }}
+              style={{ background: 'var(--accent-500)', padding: '8px 14px', fontSize: '14px' }}
             >
               {isLoading ? 'Saving...' : 'Save Changes'}
             </button>
@@ -125,9 +125,9 @@ export default function AccountSettings() {
 
       {/* Change Password */}
       <div>
-        <h3 className="text-lg font-semibold text-white/90 mb-4">Change Password</h3>
-        <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="text-base font-semibold text-white/90 mb-3">Change Password</h3>
+        <form onSubmit={handlePasswordSubmit} className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="form-group md:col-span-2">
               <div className="relative">
                 <FiLock className={formStyles.inputIcon} />
@@ -136,7 +136,7 @@ export default function AccountSettings() {
                   name="currentPassword"
                   value={formData.currentPassword}
                   onChange={handleChange}
-                  className={formStyles.input}
+                  className={`${formStyles.input} py-2 pl-9 pr-3 text-sm rounded-lg`}
                   placeholder="Current Password"
                 />
               </div>
@@ -149,7 +149,7 @@ export default function AccountSettings() {
                   name="newPassword"
                   value={formData.newPassword}
                   onChange={handleChange}
-                  className={formStyles.input}
+                  className={`${formStyles.input} py-2 pl-9 pr-3 text-sm rounded-lg`}
                   placeholder="New Password"
                 />
               </div>
@@ -162,7 +162,7 @@ export default function AccountSettings() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={formStyles.input}
+                  className={`${formStyles.input} py-2 pl-9 pr-3 text-sm rounded-lg`}
                   placeholder="Confirm New Password"
                 />
               </div>
@@ -173,7 +173,7 @@ export default function AccountSettings() {
               type="submit"
               disabled={isLoading}
               className={formStyles.button}
-              style={{ background: 'var(--accent-500)' }}
+              style={{ background: 'var(--accent-500)', padding: '8px 14px', fontSize: '14px' }}
             >
               {isLoading ? 'Updating...' : 'Update Password'}
             </button>
@@ -183,15 +183,15 @@ export default function AccountSettings() {
 
       {/* Danger Zone */}
       <div>
-        <h3 className="text-lg font-semibold text-red-500 mb-4">Danger Zone</h3>
-        <div className="p-4 rounded-lg border border-red-500/20 bg-red-500/5">
+        <h3 className="text-base font-semibold text-red-500 mb-3">Danger Zone</h3>
+        <div className="p-3 rounded-lg border border-red-500/20 bg-red-500/5">
           <h4 className="font-medium text-red-400 mb-2">Delete Account</h4>
-          <p className="text-sm text-white/70 mb-4">
+          <p className="text-sm text-white/70 mb-3">
             Once you delete your account, there is no going back. Please be certain.
           </p>
           <button
             type="button"
-            className="px-4 py-2 text-sm font-medium text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-sm font-medium text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-md transition-colors"
           >
             Delete Account
           </button>

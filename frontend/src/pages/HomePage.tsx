@@ -62,25 +62,34 @@ export default function HomePage(): JSX.Element {
               }
               setValue(val);
             }}
-            className="w-full rounded-xl p-4 min-h-[12rem] leading-relaxed resize-vertical
-              transition-all focus:ring-2 focus:ring-accent-300 bg-[color:var(--surface-500)] text-[color:var(--text-100)] placeholder-white/50
-              border border-white/10 shadow-lg hover:shadow-xl"
+            className="w-full rounded-xl p-6 min-h-[12rem] leading-relaxed resize-vertical
+              transition-all duration-200 focus:ring-2 focus:ring-accent-500/50 bg-card text-foreground placeholder-muted-foreground
+              border border-border shadow-lg hover:shadow-xl hover:border-accent-500/20"
             placeholder="Paste your text here"
             aria-label="Text to analyze"
           />
 
           <div className="mt-5 flex flex-col sm:flex-row sm:justify-between items-center gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="file" className="hidden" />
-              <span className="btn rounded-full px-5 bg-transparent border border-white/10 text-white/90">Upload file</span>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input type="file" className="hidden" accept=".txt,.doc,.docx,.pdf" />
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-card border border-border text-foreground hover:bg-muted transition-colors duration-200 group-hover:border-accent-500/20">
+                <svg className="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m0-16l-4 4m4-4l4 4"/>
+                </svg>
+                Upload file
+              </span>
             </label>
             <button
               onClick={onAnalyze}
               disabled={!text.trim()}
-              className="btn rounded-full px-8 py-3 text-lg font-bold shadow-md animate-pulse focus:ring-2 focus:ring-accent-300 hover:bg-accent-600 transition-colors"
-              style={{ background: 'var(--accent-500)' }}
+              className="px-8 py-3 text-lg font-bold rounded-full bg-accent-500 text-white shadow-lg hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 focus:ring-2 focus:ring-accent-500/50 focus:outline-none"
             >
-              Analyze
+              <span className="flex items-center gap-2">
+                Analyze
+                <svg className="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </span>
             </button>
           </div>
         </section>
@@ -108,7 +117,7 @@ export default function HomePage(): JSX.Element {
           {features.map((f) => (
             <div
               key={f.name}
-              className="rounded-xl border border-white/10 bg-white/5 p-7 flex flex-col items-center text-center shadow-sm"
+              className="rounded-xl border border-border bg-card p-7 flex flex-col items-center text-center shadow-lg hover:shadow-xl hover:border-accent-500/20 transition-all duration-200"
               tabIndex={0}
               aria-label={f.name}
             >

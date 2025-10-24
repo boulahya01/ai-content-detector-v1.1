@@ -78,7 +78,33 @@ export default function BillingManager() {
   const handleSubscribe = async (planId: string) => {
     setIsLoading(true);
     try {
-      // TODO: Implement subscription API call
+      const response = await fetch('/api/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify({
+          planId: selectedPlan,
+          paymentMethodId: paymentMethod.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update subscription');
+      }
+
+      const data = await response.json();
+      if (data.requires_action) {
+        // Handle 3D Secure authentication if needed
+        const { error } = await stripe.handleCardAction(data.payment_intent_client_secret);
+        if (error) {
+          throw new Error(error.message);
+        }
+      }
+
+      // Refresh subscription data
+      await refetchSubscription();
       toast.success('Successfully subscribed to plan');
       setSelectedPlan(planId);
     } catch (error) {

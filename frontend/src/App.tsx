@@ -10,35 +10,45 @@ import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import AnalysisProvider from '@/context/AnalysisContext';
 import { AnalyticsProvider } from '@/context/AnalyticsContext';
 import { ShobeisProvider } from '@/context/ShobeisContext';
+import { CreditsProvider } from '@/context/CreditsContext';
+import AccountLayout from '@/pages/account/AccountLayout';
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('@/pages/HomePage'));
-const LoginPage = lazy(() => import('@/pages/LoginPage'));
-const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
-const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
-import AnalysisPage from '@/pages/AnalysisPage';
+const AnalysisPage = lazy(() => import('@/pages/AnalysisPage'));
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const PricingPage = lazy(() => import('./pages/PricingPage'));
-const BillingPage = lazy(() => import('./pages/BillingPage'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const PricingPage = lazy(() => import('@/pages/PricingPage'));
+const BillingPage = lazy(() => import('@/pages/profile/BillingPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
-const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
+const VerifyEmailPage = lazy(() => import('@/pages/auth/EmailVerificationPage'));
 const AboutPage = lazy(() => import('@/pages/AboutPage'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
-const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
-const ApiKeysPage = lazy(() => import('@/pages/ApiKeysPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
+const ApiKeysPage = lazy(() => import('@/pages/profile/ApiKeysPage'));
+const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const ShobeisPage = lazy(() => import('@/pages/ShobeisPage'));
+
+// Documentation Pages
+const DocumentationPage = lazy(() => import('@/pages/docs/DocumentationPage'));
+const ApiGuidelinesPage = lazy(() => import('@/pages/docs/ApiGuidelinesPage'));
+const BestPracticesPage = lazy(() => import('@/pages/docs/BestPracticesPage'));
+const CaseStudiesPage = lazy(() => import('@/pages/docs/CaseStudiesPage'));
+const IntegrationExamplesPage = lazy(() => import('@/pages/docs/IntegrationExamplesPage'));
+const UsageStatsPage = lazy(() => import('@/pages/UsageStatsPage'));
 
 // Loading component for lazy-loaded pages
 const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-primary-50 to-white">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-background">
     <div className="relative">
       <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-accent-500 animate-spin"></div>
-      <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-b-4 border-accent-700 animate-spin delay-150"></div>
+      <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-b-4 border-accent-300 animate-spin delay-150 opacity-50"></div>
     </div>
-    <p className="mt-4 text-accent-500 font-medium">Loading...</p>
+    <p className="mt-4 text-accent-300 font-medium animate-pulse">Loading...</p>
   </div>
 );
 
@@ -62,21 +72,51 @@ function App() {
             path: 'pricing', 
             element: <PricingPage /> 
           },
-          {
-            path: 'analysis',
-            element: <PrivateRoute><AnalysisPage /></PrivateRoute>
-          },
-          {
-            path: 'analysis/history',
-            element: <PrivateRoute><HistoryPage /></PrivateRoute>
-          },
-          {
-            path: 'history',
-            element: <PrivateRoute><HistoryPage /></PrivateRoute>
-          },
           { 
             path: 'contact', 
             element: <ContactPage /> 
+          },
+
+          // Analysis routes
+          {
+            path: 'analysis',
+            children: [
+              {
+                index: true,
+                element: <PrivateRoute><AnalysisPage /></PrivateRoute>
+              },
+              {
+                path: 'history',
+                element: <PrivateRoute><HistoryPage /></PrivateRoute>
+              }
+            ]
+          },
+
+          // Documentation routes
+          {
+            path: 'docs',
+            children: [
+              {
+                index: true,
+                element: <DocumentationPage />
+              },
+              {
+                path: 'api-guidelines',
+                element: <PrivateRoute><ApiGuidelinesPage /></PrivateRoute>
+              },
+              {
+                path: 'best-practices',
+                element: <BestPracticesPage />
+              },
+              {
+                path: 'case-studies',
+                element: <CaseStudiesPage />
+              },
+              {
+                path: 'integration-examples',
+                element: <PrivateRoute><IntegrationExamplesPage /></PrivateRoute>
+              }
+            ]
           },
 
           // Authentication routes
@@ -111,34 +151,37 @@ function App() {
             element: <ResetPasswordPage />
           },
 
-          // Protected routes - require authentication
+          // Dashboard and account routes
           { 
             path: 'dashboard', 
             element: <PrivateRoute><DashboardPage /></PrivateRoute>,
             errorElement: <RouteError />
           },
           {
-            path: 'profile',
-            element: <PrivateRoute requireVerified><ProfilePage /></PrivateRoute>
-          },
-          // History and Analyze-pro are now under /analysis/* routes
-          
-          // Protected routes - require verified email
-          { 
-            path: 'settings', 
-            element: <PrivateRoute requireVerified><SettingsPage /></PrivateRoute>
-          },
-          { 
-            path: 'billing', 
-            element: <PrivateRoute requireVerified><BillingPage /></PrivateRoute>
-          },
-          {
-            path: 'shobeis',
-            element: <PrivateRoute requireVerified><ShobeisPage /></PrivateRoute>
-          },
-          {
-            path: 'api-keys',
-            element: <PrivateRoute requireVerified><ApiKeysPage /></PrivateRoute>
+            path: 'account',
+            element: <PrivateRoute requireVerified><AccountLayout /></PrivateRoute>,
+            children: [
+              {
+                index: true,
+                element: <ProfilePage />
+              },
+              {
+                path: 'settings',
+                element: <SettingsPage />
+              },
+              {
+                path: 'billing',
+                element: <BillingPage />
+              },
+              {
+                path: 'api',
+                element: <ApiKeysPage />
+              },
+              {
+                path: 'credits',
+                element: <ShobeisPage />
+              }
+            ]
           },
 
           // 404 route
@@ -161,18 +204,20 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <SubscriptionProvider>
-          <AnalysisProvider>
-            <AnalyticsProvider>
-              <ShobeisProvider>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <RouterProvider router={router} />
-                </Suspense>
-                <Toaster />
-              </ShobeisProvider>
-            </AnalyticsProvider>
-          </AnalysisProvider>
-        </SubscriptionProvider>
+          <SubscriptionProvider>
+            <CreditsProvider>
+              <AnalysisProvider>
+                <AnalyticsProvider>
+                  <ShobeisProvider>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <RouterProvider router={router} />
+                    </Suspense>
+                    <Toaster />
+                  </ShobeisProvider>
+                </AnalyticsProvider>
+              </AnalysisProvider>
+            </CreditsProvider>
+          </SubscriptionProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

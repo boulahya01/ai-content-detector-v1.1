@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAnalysis } from '@/context/AnalysisContext';
 import RadialChart from '@/components/charts/RadialChart';
 import IndicatorCard from '@/components/IndicatorCard';
+import ResultCard from '@/components/ResultCard';
 import { FiFileText, FiUpload, FiCopy, FiDownload } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -248,91 +249,56 @@ export default function AnalysisPage() {
               <option value="fr">French</option>
             </select>
 
-            <button
-              onClick={handleAnalyze}
+            <div className="flex flex-col items-start gap-2">
+              <button
+                onClick={handleAnalyze}
                 disabled={isLoading || (analysisMode === 'single' ? !text.trim() || text.length > 2000 : !batchTexts.some(t => t.trim()))}
-              className="px-6 py-2 rounded-lg bg-accent-500 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent-600 transition-colors"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  <span>Analyzing...</span>
+                className="px-5 py-2 rounded-md text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none transition-colors"
+                style={{ backgroundColor: 'var(--accent-500)' }}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Analyzing...</span>
+                  </div>
+                ) : (
+                  'Analyze'
+                )}
+              </button>
+
+              {isLoading && (
+                <div className="w-40 mt-1 h-1 bg-white/6 rounded-full overflow-hidden">
+                  <div
+                    className="h-full transition-all"
+                    style={{ backgroundColor: 'var(--accent-500)', width: `${progress?.percent ?? 0}%` }}
+                    aria-hidden
+                  />
                 </div>
-              ) : (
-                'Analyze'
               )}
-            </button>
+            </div>
           </div>
         </div>
 
         {/* Right Column - Results */}
         {result && (
           <div className="space-y-6">
-            <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-              <h2 className="text-lg font-medium text-white/90 mb-4">Analysis Results</h2>
-
-              {/* Compact summary: show AI vs Human. Details are collapsible */}
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex-1 grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-white/6 text-center">
-                    <div className="text-sm text-white/60">AI Probability</div>
-                    <div className="text-2xl font-bold text-white/90">{result.aiProbability}%</div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-white/6 text-center">
-                    <div className="text-sm text-white/60">Human Authenticity</div>
-                    <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <button
-                    className="px-3 py-2 rounded-md bg-white/5 text-white/80 hover:bg-white/10"
-                    onClick={() => setShowDetails(s => !s)}
-                    aria-expanded={showDetails}
-                  >
-                    {showDetails ? 'Hide details' : 'Show details'}
-                  </button>
-                </div>
-              </div>
-
-              {showDetails && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-6 mb-4">
-                    <RadialChart value={result.authenticityScore} size={140} stroke={12} label="Authenticity" />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-2xl font-bold text-white/90">{result.authenticityScore}%</div>
-                          <div className="text-sm text-white/60">Authenticity Score</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-white/90">{result.aiProbability}%</div>
-                          <div className="text-sm text-white/60">AI Probability</div>
-                        </div>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/10 mt-4">
-                        <div
-                          className={`h-2 rounded-full ${result.authenticityScore >= 80 ? 'bg-[#10b981]' : 'bg-[#ef4444]'}`}
-                          style={{ width: `${result.authenticityScore}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {result.indicators.map((indicator, index) => (
-                      <div key={index}>
-                        <IndicatorCard title={indicator.type} description={indicator.description} confidence={indicator.confidence} />
-                      </div>
-                    ))}
-                  </div>
-
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-white/90 hover:bg-white/10 transition-colors">
-                    <FiDownload className="w-4 h-4" />
-                    <span>Download Report</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <ResultCard
+              result={{
+                id: result.id,
+                authenticityScore: result.authenticityScore,
+                aiProbability: result.aiProbability,
+                indicators: result.indicators,
+              }}
+              onDownload={(id) => {
+                // placeholder: trigger download via analysisService or open new route
+                // analysisService.downloadReport(id)
+                console.log('download', id);
+              }}
+              onCompare={(id) => {
+                // navigate to compare page when implemented
+                console.log('compare', id);
+              }}
+            />
           </div>
         )}
       </div>

@@ -1,0 +1,211 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { useAnalysis } from '@/context/AnalysisContext';
+import { toast } from 'sonner';
+import TextAnalyzer from '@/components/analysis/TextAnalyzer';
+import AnalysisResult from '@/components/analysis/AnalysisResult';
+import AnalysisHistory from '@/components/analysis/AnalysisHistory';
+import { analysisService } from '@/api/analysis';
+
+interface AnalysisResult {
+  authenticityScore: number;
+  confidenceLevel: 'high' | 'medium' | 'low';
+  aiProbability: number;
+  indicators: Array<{
+    type: string;
+    description: string;
+    confidence: number;
+  }>;
+}
+
+interface AnalysisResult {
+  authenticityScore: number;
+  confidenceLevel: 'high' | 'medium' | 'low';
+  aiProbability: number;
+  indicators: Array<{
+    type: string;
+    description: string;
+    confidence: number;
+  }>;
+  id?: string;
+}
+
+export default function AnalyzePage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { analyzeText } = useAnalysis();
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [language, setLanguage] = useState('auto');
+
+  const handleAnalyze = async () => {
+    if (!text.trim()) {
+      toast.error('Please enter some text to analyze');
+      return;
+    }
+
+    if (text.length > 2000) {
+      toast.error('Text must be 2000 characters or fewer.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const respResult = await analyzeTextCtx(text, { language: language === 'auto' ? undefined : language, detailed: true });
+      const data = respResult as any;
+
+      // Normalize aiProbability
+      let rawAiProb: number | undefined = data.aiProbability ?? data.analysisDetails?.aiProbability;
+      let aiProbabilityPercent = 0;
+      if (typeof rawAiProb === 'number') {
+        aiProbabilityPercent = rawAiProb > 1 ? Math.round(rawAiProb) : Math.round(rawAiProb * 100);
+      }
+
+      // Normalize authenticityScore
+      let rawAuth = data.authenticityScore ?? data.authenticityScor ?? undefined;
+      let authenticityScorePercent = 0;
+      if (typeof rawAuth === 'number') {
+        authenticityScorePercent = rawAuth > 1 ? Math.round(rawAuth) : Math.round(rawAuth * 100);
+      } else if (aiProbabilityPercent) {
+        authenticityScorePercent = 100 - aiProbabilityPercent;
+      }
+
+      const indicators = data.analysisDetails?.indicators || data.indicators || [];
+      const normalizedIndicators = indicators.map((indicator: any) => {
+        const confRaw = indicator.confidence;
+        let confFraction = 0;
+        if (typeof confRaw === 'number') {
+          confFraction = confRaw > 1 ? confRaw / 100 : confRaw;
+        }
+        return {
+          type: indicator.type,
+          description: indicator.description,
+          confidence: confFraction,
+        };
+      });
+
+      setResult({
+        authenticityScore: authenticityScorePercent,
+        confidenceLevel: data.confidence > 0.8 ? 'high' : data.confidence > 0.6 ? 'medium' : 'low',
+        aiProbability: aiProbabilityPercent,
+        indicators: normalizedIndicators,
+      });
+      toast.success('Analysis completed successfully');
+    } catch (error: any) {
+      const msg = error?.message || 'Failed to analyze text';
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    toast.success('Text copied to clipboard');
+  };
+
+  const handlePaste = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      setText(clipboardText);
+      toast.success('Text pasted from clipboard');
+    } catch (error) {
+      toast.error('Failed to paste from clipboard');
+    }
+  };
+
+  return (
+    <div className="container mx-auto max-w-5xl px-4 py-8 space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-bold text-white">Content Analysis</h1>
+        <p className="text-lg text-white/60 mt-2">
+          Basic content analysis
+        </p>
+      </div>
+
+      {/* Analysis Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8 mt-8">
+        {/* Left Column - Text Input */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-medium text-white/90">Input Text</h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1 text-sm text-white/60 hover:text-white/90"
+              >
+                <FiCopy className="w-4 h-4" />
+                Copy
+              </button>
+              <button
+                onClick={handlePaste}
+                className="flex items-center gap-1 text-sm text-white/60 hover:text-white/90"
+              >
+                <FiUpload className="w-4 h-4" />
+                Paste
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Enter or paste your text here..."
+            maxLength={2000}
+            className="w-full h-[400px] rounded-lg p-4 bg-black/40 backdrop-blur-sm border border-white/10 text-white/90 placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+          />
+
+          <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center gap-4">
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="px-3 py-2 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10 text-white/70 text-sm focus:outline-none focus:border-purple-500/50"
+              >
+                <option value="auto">Auto Detect</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+              </select>
+            </div>
+
+            <button
+              onClick={handleAnalyze}
+              disabled={isLoading || !text.trim() || text.length > 2000}
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium text-white rounded-full shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              style={{ backgroundColor: 'var(--accent-500)', boxShadow: '0 18px 40px rgba(94,23,235,0.12)' }}
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Analyze Text</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column - Results */}
+        {result && (
+          <div className="space-y-6">
+            <ResultCard
+              result={{
+                id: undefined,
+                authenticityScore: result.authenticityScore,
+                aiProbability: result.aiProbability,
+                indicators: result.indicators,
+              }}
+              onDownload={(id) => console.log('download', id)}
+              onCompare={(id) => console.log('compare', id)}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

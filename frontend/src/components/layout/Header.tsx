@@ -47,23 +47,32 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 h-16 border-b border-white/10 bg-gray-900/95 backdrop-blur-xl">
-      <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container h-16 flex items-center justify-between">
         {/* Left side - Logo and Navigation */}
         <div className="flex items-center">
-          <Link to="/" className="flex items-center mr-8">
-            <span className="text-lg font-bold text-white">THE AI DETECTOR</span>
+          <Link to="/" className="flex items-center mr-8 space-x-2">
+            <span className="text-lg font-bold bg-gradient-to-r from-accent-300 to-accent-500 bg-clip-text text-transparent">THE AI DETECTOR</span>
           </Link>
           
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <Link 
+              to="/dashboard" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Dashboard
             </Link>
-            <Link to="/analysis/new" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <Link 
+              to="/analysis" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Analysis
             </Link>
-            <Link to="/analysis/history" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-              History
+            <Link 
+              to="/docs" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Documentation
             </Link>
           </nav>
         </div>
@@ -114,43 +123,43 @@ export function Header() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-gray-900/95 backdrop-blur-xl border-white/10">
-              <DropdownMenuLabel className="border-b border-white/10">
+              <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium text-white/90">{user?.first_name || user?.email?.split('@')[0] || 'User'}</p>
-                  <p className="text-xs text-white/60">{user?.email}</p>
+                  <p className="text-sm font-medium">{user?.first_name || user?.email?.split('@')[0] || 'User'}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
               <div className="p-1">
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center text-white/70 hover:text-white hover:bg-white/5 group">
-                    <FiUser className="mr-2 h-4 w-4 text-white/60 group-hover:text-white" />
-                    Profile
+                  <Link to="/account" className="flex items-center group cursor-pointer">
+                    <FiUser className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                    Account
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/settings" className="flex items-center text-white/70 hover:text-white hover:bg-white/5 group">
-                    <FiSettings className="mr-2 h-4 w-4 text-white/60 group-hover:text-white" />
+                  <Link to="/account/settings" className="flex items-center group cursor-pointer">
+                    <FiSettings className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                     Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/api-keys" className="flex items-center text-white/70 hover:text-white hover:bg-white/5 group">
-                    <FiKey className="mr-2 h-4 w-4 text-white/60 group-hover:text-white" />
-                    API Keys
+                  <Link to="/account/api" className="flex items-center group cursor-pointer">
+                    <FiKey className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                    API Access
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/billing" className="flex items-center text-white/70 hover:text-white hover:bg-white/5 group">
-                    <FiCreditCard className="mr-2 h-4 w-4 text-white/60 group-hover:text-white" />
-                    Billing
+                  <Link to="/account/billing" className="flex items-center group cursor-pointer">
+                    <FiCreditCard className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                    Billing & Credits
                   </Link>
                 </DropdownMenuItem>
               </div>
-              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuSeparator />
               <div className="p-1">
                 <DropdownMenuItem 
                   onClick={handleLogout}
-                  className="flex items-center text-red-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                  className="flex items-center text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                 >
                   <FiLogOut className="mr-2 h-4 w-4" />
                   Sign out

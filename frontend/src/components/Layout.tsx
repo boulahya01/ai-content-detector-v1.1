@@ -111,52 +111,85 @@ export function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen text-white overflow-hidden" style={{ background: 'var(--bg-page)' }}>
+    <div className="min-h-screen text-foreground bg-background overflow-hidden">
       <Header />
 
       {/* Mobile Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 z-40">
-        <div className="grid grid-cols-4 gap-1 p-2">
-            {(user ? navigation.private : navigation.public).map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  'flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors',
-                  location.pathname === item.href
-                    ? 'text-accent-500'
-                    : 'text-white/70 hover:text-white'
-                )}
-              >
-                <span className="font-medium">{item.name}</span>
-              </Link>
-            ))}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 backdrop-blur-lg">
+        <div className="grid grid-cols-5 gap-1 px-2 py-1">
+          <Link
+            to="/dashboard"
+            className={cn(
+              'flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors',
+              location.pathname === '/dashboard'
+                ? 'text-accent-500'
+                : 'text-white/70 hover:text-white'
+            )}
+          >
+            <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span className="font-medium">Dashboard</span>
+          </Link>
 
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="flex flex-col items-center justify-center py-2 px-1 rounded-md text-xs text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200"
-            >
-              <svg className="w-5 h-5 mb-1" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
-              <span className="font-medium">Menu</span>
-            </button>
-          </div>
-
-        {/* Mobile Quick Action Button */}
-        <div className="fixed right-4 bottom-20">
           <Link
             to="/analysis"
-            className="flex items-center justify-center w-12 h-12 rounded-full 
-                      bg-white text-black shadow-lg 
-                      hover:bg-white/90
-                      focus:outline-none focus:ring-2 focus:ring-white
-                      transition-colors"
+            className={cn(
+              'flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors',
+              location.pathname.startsWith('/analysis')
+                ? 'text-accent-500'
+                : 'text-white/70 hover:text-white'
+            )}
           >
-            <svg className="w-6 h-6" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 3v2m0 14v2M9 17l-2 2m10 0l2-2M3 12h2m14 0h2M7 7L5 5m14 0l-2 2" />
             </svg>
+            <span className="font-medium">Analyze</span>
           </Link>
+
+          <Link
+            to="/analysis/history"
+            className={cn(
+              'flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors',
+              location.pathname === '/analysis/history'
+                ? 'text-accent-500'
+                : 'text-white/70 hover:text-white'
+            )}
+          >
+            <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="font-medium">History</span>
+          </Link>
+
+          <Link
+            to="/docs"
+            className={cn(
+              'flex flex-col items-center justify-center py-2 px-1 text-xs transition-colors',
+              location.pathname.startsWith('/docs')
+                ? 'text-accent-500'
+                : 'text-white/70 hover:text-white'
+            )}
+          >
+            <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span className="font-medium">Docs</span>
+          </Link>
+
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="flex flex-col items-center justify-center py-2 px-1 text-xs text-white/70 hover:text-white transition-colors"
+          >
+            <svg className="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+            <span className="font-medium">Menu</span>
+          </button>
+        </div>
         </div>
       </div>
 
@@ -169,7 +202,7 @@ export function Layout() {
       />
 
       {/* Main content */}
-      <main className="pt-16 pb-20 md:pb-8 min-h-screen bg-black">
+      <main className="pt-16 pb-20 md:pb-8 min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page Content */}
           <div className="pb-8">
@@ -179,7 +212,7 @@ export function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-accent-500/10">
+      <footer className="bg-card/50 border-t border-border backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           {/* Main Footer Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">

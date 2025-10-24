@@ -9,6 +9,8 @@ import TimeTrackerCard from '@/components/dashboard/TimeTrackerCard';
 import ProductivityCard from '@/components/dashboard/ProductivityCard';
 import CompletedTasksCard from '@/components/dashboard/CompletedTasksCard';
 import CardMenu from '@/components/ui/CardMenu';
+import LineChart from '@/components/charts/LineChart';
+import TimeFrameSelector from '@/components/TimeFrameSelector';
 import { exportData } from '@/utils/export';
 
 import '@/styles/dashboard.css';
@@ -16,7 +18,13 @@ import '@/styles/dashboard.css';
 export default function DashboardPage() {
   const { user } = useAuth();
   const { subscription } = useSubscription();
-  const { loading: analyticsLoading, userAnalytics } = useAnalytics();
+  const { 
+    loading: analyticsLoading, 
+    userAnalytics, 
+    timeframe, 
+    setTimeframe,
+    usageStats
+  } = useAnalytics();
 
   const [showName, setShowName] = useState(false);
   useEffect(() => {
@@ -208,6 +216,53 @@ export default function DashboardPage() {
                     series={getDayOfWeekAnalytics()}
                   />
                   <RecentActivityFeed />
+
+                  {/* Usage Stats Section */}
+                  <div className="dashboard-card p-6">
+                    <div className="flex items-start justify-between mb-6">
+                      <h3 className="text-xl font-semibold text-white">Usage Over Time</h3>
+                      <TimeFrameSelector
+                        value={timeframe}
+                        onChange={(value) => setTimeframe(value)}
+                      />
+                    </div>
+
+                    {usageStats?.timeline && usageStats.timeline.length > 0 ? (
+                      <LineChart
+                        data={usageStats.timeline}
+                        dataKey="creditsUsed"
+                        xAxisKey="date"
+                        yAxisLabel="Credits"
+                        height={300}
+                      />
+                    ) : (
+                      <div className="h-64 flex items-center justify-center border rounded">
+                        <p className="text-muted-foreground">No usage data available for selected timeframe</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* API Usage Stats */}
+                  <div className="dashboard-card p-6">
+                    <h3 className="text-xl font-semibold text-white mb-4">API Usage by Endpoint</h3>
+                    {usageStats?.apiUsage && usageStats.apiUsage.length > 0 ? (
+                      <div className="space-y-4">
+                        {usageStats.apiUsage.map((api: { endpoint: string; requests: number; successRate: number; avgResponseTime: number }, index: number) => (
+                          <div key={index} className="flex justify-between items-center py-2 border-b last:border-0">
+                            <div>
+                              <p className="font-medium">{api.endpoint}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Success Rate: {Math.round(api.successRate)}% · Avg Response: {Math.round(api.avgResponseTime)}ms
+                              </p>
+                            </div>
+                            <div className="text-accent-500 font-medium">{api.requests} requests</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">No API usage data available</p>
+                    )}
+                  </div>
                 </>
               )}
             </div>

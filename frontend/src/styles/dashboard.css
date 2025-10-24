@@ -3,7 +3,7 @@
   --card-surface: #000000; /* cards must be pure black */
   --card-border: rgba(255,255,255,0.06);
   --muted: #94a3b8;
-  --chart-color: #5e17eb ; /* exact chart color */
+  --chart-color: var(--accent-500); /* exact chart color */
   --text-color: #ffffff; /* exact text color */
   --positive: #10b981;
   --negative: #ef4444;
