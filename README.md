@@ -1,8 +1,192 @@
-# 🔍 THE AI DETECTOR - Technical Documentation
+# 🤖 THE AI DETECTOR
 
-A comprehensive documentation for the AI content detection platform. This document provides detailed technical information about the project structure, implementation details, and development guidelines.
+[![Made with React](https://img.shields.io/badge/Made%20with-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
+[![Powered by FastAPI](https://img.shields.io/badge/Powered%20by-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![ML with PyTorch](https://img.shields.io/badge/ML%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![Database PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 
-## Table of Contents
+> 🔍 **Advanced AI Content Detection Platform** - Harness the power of cutting-edge machine learning to detect AI-generated content with unparalleled accuracy.
+
+![Dashboard Preview](./screnshots-README/HOME.png)
+
+## ✨ Key Features
+
+🎯 **High Accuracy Detection**
+- Advanced machine learning models
+- Real-time analysis
+- Multi-language support
+- Confidence scoring
+
+⚡ **Lightning Fast Results**
+- Instant text analysis
+- Batch processing
+- File upload support
+- Efficient caching
+
+🛡️ **Enterprise Ready**
+- Secure authentication
+- API access
+- Usage analytics
+- Team management
+
+## 📊 Smart Dashboard
+
+![Dashboard Features](./screnshots-README/dashboard.png)
+
+✨ **Modern Interface**
+- Dark mode support
+- Responsive design
+- Interactive charts
+- Real-time updates
+
+📈 **Analytics & Insights**
+- Usage statistics
+- Detection trends
+- Performance metrics
+- Export capabilities
+
+## 🚀 Getting Started
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/boulahya01/the-ai-detector.git
+
+# Install dependencies
+cd the-ai-detector
+npm install    # Frontend
+pip install -r requirements.txt  # Backend
+
+# Start development servers
+npm run dev    # Frontend at http://localhost:5173
+uvicorn app.main:app --reload  # Backend at http://localhost:8000
+```
+
+### Project Structure
+
+```
+the-ai-detector/
+├── frontend/                # React TypeScript application
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   │   ├── analytics/  # Analytics components
+│   │   │   ├── auth/      # Authentication components
+│   │   │   └── common/    # Shared components
+│   │   ├── pages/         # Main application pages
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── api/           # API integration
+│   │   └── utils/         # Utility functions
+│   └── public/            # Static assets
+│
+├── backend/               # FastAPI Python backend
+│   ├── app/
+│   │   ├── api/          # API endpoints
+│   │   ├── models/       # Database models
+│   │   ├── services/     # Business logic
+│   │   └── utils/        # Helper utilities
+│   ├── tests/            # Test suite
+│   └── alembic/          # Database migrations
+│
+└── docs/                 # Documentation
+    ├── api/             # API documentation
+    └── guides/          # User guides
+```
+
+## 🎯 Core Features
+
+### AI Detection Engine
+![Analysis](./screnshots-README/analysis.png)
+
+- **Advanced ML Models**: Powered by state-of-the-art machine learning
+- **High Accuracy**: Precision-tuned detection algorithms
+- **Fast Processing**: Real-time content analysis
+- **Multiple Formats**: Support for text, files, and URLs
+
+### User Management
+![User Management](./screnshots-README/LOGIN.png)
+
+- **Secure Authentication**: JWT-based security
+- **User Roles**: Custom access levels
+- **Team Support**: Collaborate with team members
+- **Usage Tracking**: Monitor API usage
+
+### API Integration
+![API Access](./screnshots-README/api-keys.png)
+
+- **RESTful API**: Clean, well-documented endpoints
+- **API Keys**: Secure access management
+- **Rate Limiting**: Controlled resource usage
+- **Webhooks**: Real-time notifications
+
+## 💻 Technology Stack
+
+### Frontend
+- **React 18**: Modern UI framework
+- **TypeScript**: Type-safe code
+- **TailwindCSS**: Utility-first styling
+- **React Query**: Data fetching
+- **Vite**: Fast development
+
+### Backend
+- **FastAPI**: High-performance API
+- **PostgreSQL**: Reliable database
+- **SQLAlchemy**: ORM
+- **PyTorch**: ML framework
+- **Redis**: Caching layer
+
+## 📱 Mobile Experience
+
+![Mobile UI](./screnshots-README/mobile.png)
+
+- **Responsive Design**: Works on all devices
+- **Touch Optimized**: Mobile-first approach
+- **Offline Support**: PWA capabilities
+- **Fast Loading**: Optimized performance
+
+## 🔒 Security Features
+
+- **JWT Authentication**: Secure token-based auth
+- **Rate Limiting**: DDoS protection
+- **Input Validation**: XSS prevention
+- **CORS**: Configured security headers
+- **API Security**: Key-based access
+
+## 📖 Documentation
+
+- [User Guide](./docs/guides/getting-started.md)
+- [API Reference](./docs/api/README.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Security](./SECURITY.md)
+- [License](./LICENSE)
+
+## 🌟 Premium Features
+
+![Premium Features](./screnshots-README/subscription.png)
+
+✨ **Enterprise Plan**
+- Unlimited API calls
+- Priority support
+- Custom ML models
+- Team management
+- Advanced analytics
+
+## 🤝 Contributing
+
+We welcome contributions! Please check our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <a href="https://theaidetector.com">Website</a> •
+  <a href="/docs">Documentation</a> •
+  <a href="/docs/api">API</a> •
+  <a href="https://discord.gg/theaidetector">Discord</a>
+</p>
 1. [Project Overview](#project-overview)
 2. [Architecture](#architecture)
 3. [File Structure](#file-structure)
