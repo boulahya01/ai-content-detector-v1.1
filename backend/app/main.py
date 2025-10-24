@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.utils.settings import settings
 
 # Import routers (must be before include_router)
-from app.api import auth, analytics, analyze, shobeis
+from app.api import auth, analytics, analyze, shobeis, contact
 from app.api import subscriptions, api_keys, notifications
 
 # Minimal FastAPI app focused on auth testing
@@ -31,8 +31,9 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"]
 app.include_router(analyze.router, prefix="/api", tags=["analysis"])
 app.include_router(shobeis.router, prefix="/api/shobeis", tags=["shobeis"])
 app.include_router(subscriptions.router, prefix="/api", tags=["subscriptions"])
-app.include_router(api_keys.router, tags=["api-keys"])
-app.include_router(notifications.router, tags=["notifications"])
+app.include_router(api_keys.router, prefix="/api/keys", tags=["api-keys"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["notifications"])
+app.include_router(contact.router, prefix="/api", tags=["contact"])
 
 # Admin routes (optional)
 try:
