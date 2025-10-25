@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/toaster';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import RouteError from '@/components/RouteError';
 import { Layout } from '@/components/Layout';
@@ -32,6 +32,16 @@ const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const ApiKeysPage = lazy(() => import('@/pages/profile/ApiKeysPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const ShobeisPage = lazy(() => import('@/pages/ShobeisPage'));
+
+// Settings pages
+const AccountSettings = lazy(() => import('@/pages/settings/AccountSettings'));
+const SecuritySettings = lazy(() => import('@/pages/settings/SecuritySettings'));
+const NotificationsSettings = lazy(() => import('@/pages/settings/NotificationsSettings'));
+const AppearanceSettings = lazy(() => import('@/pages/settings/AppearanceSettings'));
+const ApiAccessSettings = lazy(() => import('@/pages/settings/ApiAccessSettings'));
+const BillingSettings = lazy(() => import('@/pages/settings/BillingSettings'));
+const BillingHistory = lazy(() => import('@/pages/settings/BillingHistory'));
+const PaymentSettings = lazy(() => import('@/pages/settings/PaymentSettings'));
 
 // Documentation Pages
 const DocumentationPage = lazy(() => import('@/pages/docs/DocumentationPage'));
@@ -81,9 +91,11 @@ function App() {
           {
             path: 'analysis',
             children: [
+              // Allow anonymous users to use the analysis UI (with client-side limits).
+              // Protected subroutes (history) still require authentication.
               {
                 index: true,
-                element: <PrivateRoute><AnalysisPage /></PrivateRoute>
+                element: <AnalysisPage />
               },
               {
                 path: 'history',
@@ -158,28 +170,83 @@ function App() {
             errorElement: <RouteError />
           },
           {
-            path: 'account',
-            element: <PrivateRoute requireVerified><AccountLayout /></PrivateRoute>,
+            path: 'settings',
+            element: <PrivateRoute requireVerified><SettingsPage /></PrivateRoute>,
             children: [
               {
-                index: true,
-                element: <ProfilePage />
+                path: 'account',
+                children: [
+                  {
+                    path: 'profile',
+                    element: <ProfilePage />
+                  },
+                  {
+                    path: 'subscription',
+                    element: <BillingPage />
+                  },
+                  {
+                    path: 'activity',
+                    element: <HistoryPage />
+                  }
+                ]
               },
               {
-                path: 'settings',
-                element: <SettingsPage />
+                path: 'account-settings',
+                element: <AccountSettings />
               },
               {
-                path: 'billing',
-                element: <BillingPage />
+                path: 'security',
+                element: <SecuritySettings />
+              },
+              {
+                path: 'notifications',
+                element: <NotificationsSettings />
+              },
+              {
+                path: 'appearance',
+                element: <AppearanceSettings />
               },
               {
                 path: 'api',
-                element: <ApiKeysPage />
+                element: <ApiAccessSettings />
               },
               {
-                path: 'credits',
-                element: <ShobeisPage />
+                path: 'billing',
+                element: <BillingSettings />
+              },
+              {
+                path: 'api-access',
+                children: [
+                  {
+                    path: 'keys',
+                    element: <ApiKeysPage />
+                  },
+                  {
+                    path: 'usage',
+                    element: <UsageStatsPage />
+                  },
+                  {
+                    path: 'docs',
+                    element: <ApiGuidelinesPage />
+                  }
+                ]
+              },
+              {
+                path: 'billing',
+                children: [
+                  {
+                    path: 'overview',
+                    element: <BillingPage />
+                  },
+                  {
+                    path: 'invoices',
+                    element: <BillingHistory />
+                  },
+                  {
+                    path: 'payment',
+                    element: <PaymentSettings />
+                  }
+                ]
               }
             ]
           },
@@ -194,10 +261,9 @@ function App() {
     ],
     {
       future: {
-        // Using any to handle future flags that aren't in the current types
-        ...(({ v7_startTransition: true }) as any),
-        v7_normalizeFormMethod: true,
-      }
+        v7_startTransition: true,
+        v7_normalizeFormMethod: true
+      } satisfies Partial<{ [K in `v7_${string}`]: boolean }>
     }
   );
 
