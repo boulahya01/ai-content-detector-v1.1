@@ -1,257 +1,510 @@
-# 🤖 THE AI DETECTOR
+# 🤖 The AI Detector# 🤖 THE AI DETECTOR
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+
+<div align="center">[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
 [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org)
-[![PyTorch](https://img.shields.io/badge/ML%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 
-> 🔍 **Advanced AI Content Detection Platform** powered by state-of-the-art machine learning for unparalleled accuracy in detecting AI-generated content.
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 
-![Dashboard Preview](./screnshots-README/HOME.png)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org)
 
-## ✨ Key Features
+[![Python](https://img.shields.io/badge/Python-14354C?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)[![PyTorch](https://img.shields.io/badge/ML%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)> 🔍 **Advanced AI Content Detection Platform** powered by state-of-the-art machine learning for unparalleled accuracy in detecting AI-generated content.
+
+
+
+Advanced AI Content Detection Platform powered by state-of-the-art machine learning.![Dashboard Preview](./screnshots-README/HOME.png)
+
+
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)## ✨ Key Features
+
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://semver.org)
 
 🎯 **Powerful Detection**
-- State-of-the-art ML models (RoBERTa-based)
-- Multi-language support with confidence scoring
-- Support for text, documents (.txt, .docx)
-- Advanced pattern analysis
 
-⚡ **Fast & Efficient**
+[Features](#-features) •- State-of-the-art ML models (RoBERTa-based)
+
+[Screenshots](#-screenshots) •- Multi-language support with confidence scoring
+
+[Tech Stack](#-tech-stack) •- Support for text, documents (.txt, .docx)
+
+[Architecture](#-architecture) •- Advanced pattern analysis
+
+[Getting Started](#-getting-started) •
+
+[Documentation](#-documentation)⚡ **Fast & Efficient**
+
 - Real-time content analysis
-- Efficient batch processing
+
+![Home Page](./screnshots-README/HOME.png)- Efficient batch processing
+
 - Redis-based caching
-- Rate limiting and throttling
 
-🛡️ **Enterprise-Grade**
+</div>- Rate limiting and throttling
+
+
+
+## ✨ Features🛡️ **Enterprise-Grade**
+
 - JWT-based authentication
-- Role-based access control
-- API key management
-- Usage analytics & monitoring
 
-## � User Experience
+### 🎯 Core Capabilities- Role-based access control
 
-### Modern Dashboard
-![Dashboard](./screnshots-README/dashboard.png)
-- Dark/light theme support
-- Mobile-first responsive design
-- Real-time analytics
+- **State-of-the-art Detection**: RoBERTa-based ML models- API key management
+
+- **Multi-language Support**: Intelligent language detection- Usage analytics & monitoring
+
+- **Real-time Analysis**: Instant content verification
+
+- **Batch Processing**: Handle multiple documents efficiently## � User Experience
+
+
+
+### 🛡️ Security & Authentication### Modern Dashboard
+
+- **JWT Authentication**: Secure token-based system![Dashboard](./screnshots-README/dashboard.png)
+
+- **Role-based Access**: Granular permission control- Dark/light theme support
+
+- **API Key Management**: Secure API access- Mobile-first responsive design
+
+- **Rate Limiting**: Request throttling- Real-time analytics
+
 - Interactive data visualization
 
-### Analysis Interface
-![Analysis](./screnshots-README/analysis.png)
-- Instant AI detection results
-- Detailed confidence metrics
-- Pattern highlighting
-- Export functionality
+### 💼 Business Features
 
-### Authentication
-![Login](./screnshots-README/LOGIN.png)
-- Secure email/password auth
+- **Credits System**: Flexible usage tracking### Analysis Interface
+
+- **Subscription Plans**: Tiered access levels![Analysis](./screnshots-README/analysis.png)
+
+- **Usage Analytics**: Detailed metrics- Instant AI detection results
+
+- **Billing Management**: Automated payments- Detailed confidence metrics
+
+- Pattern highlighting
+
+### 🎨 User Experience- Export functionality
+
+- **Modern Interface**: Clean, intuitive design
+
+- **Mobile Responsive**: Full mobile support### Authentication
+
+- **Dark/Light Themes**: Customizable appearance![Login](./screnshots-README/LOGIN.png)
+
+- **Real-time Updates**: Live analysis feedback- Secure email/password auth
+
 - OAuth integration
-- Session management
+
+## 📸 Screenshots- Session management
+
 - Two-factor ready
 
-## 💻 Technology Stack
+### User Interface
 
-### Frontend
+<table>## 💻 Technology Stack
+
+<tr>
+
+<td width="50%">### Frontend
+
 - **React 18** with TypeScript
-- **TailwindCSS** for styling
-- **React Query** for data fetching
-- **Vite** for development
+
+**Dashboard**- **TailwindCSS** for styling
+
+![Dashboard](./screnshots-README/DASHBOARD-V1.0.png)- **React Query** for data fetching
+
+*Main dashboard with analytics and quick actions*- **Vite** for development
+
 - **Radix UI** components
 
-### Backend
+</td>
+
+<td width="50%">### Backend
+
 - **FastAPI** for API development
-- **PostgreSQL** + SQLAlchemy ORM
-- **PyTorch** + Transformers
-- **Redis** for caching
+
+**Analysis**- **PostgreSQL** + SQLAlchemy ORM
+
+![Analysis](./screnshots-README/Analyse-and-result.png)- **PyTorch** + Transformers
+
+*Content analysis with detailed results*- **Redis** for caching
+
 - **Alembic** for migrations
 
-## 📦 Project Structure
+</td>
 
-```bash
+</tr>## 📦 Project Structure
+
+<tr>
+
+<td width="50%">```bash
+
 ai-content-detector/
-├── frontend/                # React + TypeScript
-│   ├── src/
-│   │   ├── components/     # UI components
+
+**Results Explanation**├── frontend/                # React + TypeScript
+
+![Results](./screnshots-README/EXPLAIN-RESULT.png)│   ├── src/
+
+*Detailed analysis explanation*│   │   ├── components/     # UI components
+
 │   │   │   ├── features/   # Feature modules
-│   │   │   ├── layout/     # Layout components
-│   │   │   └── ui/        # Base components
+
+</td>│   │   │   ├── layout/     # Layout components
+
+<td width="50%">│   │   │   └── ui/        # Base components
+
 │   │   ├── pages/         # Route pages
-│   │   ├── context/       # React contexts
-│   │   ├── hooks/         # Custom hooks
-│   │   └── utils/         # Utilities
+
+**Settings**│   │   ├── context/       # React contexts
+
+![Settings](./screnshots-README/settings-page.png)│   │   ├── hooks/         # Custom hooks
+
+*User settings and preferences*│   │   └── utils/         # Utilities
+
 │   └── public/            # Static assets
-│
-├── backend/                # FastAPI + Python
-│   ├── app/
-│   │   ├── api/           # API endpoints
+
+</td>│
+
+</tr>├── backend/                # FastAPI + Python
+
+<tr>│   ├── app/
+
+<td width="50%">│   │   ├── api/           # API endpoints
+
 │   │   │   ├── auth.py    # Authentication
-│   │   │   ├── analyze.py # Content analysis
-│   │   │   └── shobeis.py # Credits system
-│   │   ├── models/        # Database models
+
+**Authentication**│   │   │   ├── analyze.py # Content analysis
+
+![Login](./screnshots-README/LOGIN.png)│   │   │   └── shobeis.py # Credits system
+
+*Secure user authentication*│   │   ├── models/        # Database models
+
 │   │   ├── services/      # Business logic
-│   │   └── utils/         # Utilities
-│   ├── tests/             # Test suite
+
+</td>│   │   └── utils/         # Utilities
+
+<td width="50%">│   ├── tests/             # Test suite
+
 │   └── migrations/        # DB migrations
-```
 
-## 🚀 Quick Start
+**Documentation**```
 
-### Prerequisites
-- Node.js 16+
-- Python 3.10+
+![Documentation](./screnshots-README/documentation.png)
+
+*API documentation and guides*## 🚀 Quick Start
+
+
+
+</td>### Prerequisites
+
+</tr>- Node.js 16+
+
+</table>- Python 3.10+
+
 - PostgreSQL 13+
-- Redis (optional)
 
-### Installation
+## 🛠 Tech Stack- Redis (optional)
 
-```bash
-# Clone repository
-git clone https://github.com/boulahya01/the-ai-detector.git
-cd the-ai-detector
 
-# Backend setup
-cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+
+### Frontend Technologies### Installation
+
+- **Framework**: React 18 with TypeScript
+
+- **Styling**: TailwindCSS + CSS Variables```bash
+
+- **State Management**: Context API + Custom Hooks# Clone repository
+
+- **Build Tool**: Vitegit clone https://github.com/boulahya01/the-ai-detector.git
+
+- **Type Checking**: TypeScriptcd the-ai-detector
+
+- **Component Library**: Custom UI components + Radix UI
+
+- **HTTP Client**: Axios with interceptors# Backend setup
+
+- **Form Handling**: React Hook Formcd backend
+
+- **Data Validation**: Zodpython -m venv venv
+
+- **Testing**: Jest + React Testing Librarysource venv/bin/activate  # Windows: venv\Scripts\activate
+
 pip install -r requirements.txt
 
-# Frontend setup
-cd frontend
-npm install
+### Backend Technologies
 
-# Environment setup
-cp .env.example .env  # Both frontend and backend
-# Update configuration values
+- **Framework**: FastAPI (Python)# Frontend setup
 
-# Start servers
+- **Database**: PostgreSQL + SQLAlchemy ORMcd frontend
+
+- **ML Framework**: PyTorch + Transformersnpm install
+
+- **Caching**: Redis
+
+- **Authentication**: JWT + bcrypt# Environment setup
+
+- **Migration**: Alembiccp .env.example .env  # Both frontend and backend
+
+- **Testing**: pytest# Update configuration values
+
+- **Task Queue**: Celery (optional)
+
+- **Documentation**: OpenAPI/Swagger# Start servers
+
 cd backend && uvicorn app.main:app --reload
-cd frontend && npm run dev
-```
 
-Visit `http://localhost:5173` to start using the application.
+### DevOps & Infrastructurecd frontend && npm run dev
 
-## ⚙️ Key Features
+- **Version Control**: Git```
+
+- **CI/CD**: GitHub Actions
+
+- **Containerization**: DockerVisit `http://localhost:5173` to start using the application.
+
+- **Monitoring**: Prometheus + Custom Analytics
+
+- **Logging**: Custom logging system## ⚙️ Key Features
+
+- **Security**: CORS, Rate Limiting, Input Validation
 
 ### Advanced Detection
-![Analysis Interface](./screnshots-README/analysis.png)
 
-- **ML-Powered Analysis**: RoBERTa-based models
-- **Multi-Format Support**: Text, .txt, .docx
-- **Real-time Results**: Instant feedback
-- **Batch Processing**: Handle multiple files
+## 📐 Architecture![Analysis Interface](./screnshots-README/analysis.png)
 
-### API Integration
-![API Keys](./screnshots-README/api-keys.png)
+
+
+### Project Structure- **ML-Powered Analysis**: RoBERTa-based models
+
+\`\`\`- **Multi-Format Support**: Text, .txt, .docx
+
+ai-content-detector/- **Real-time Results**: Instant feedback
+
+├── frontend/            # React + TypeScript application- **Batch Processing**: Handle multiple files
+
+├── backend/            # FastAPI + Python service
+
+├── docs/              # Documentation### API Integration
+
+└── scripts/           # Utility scripts![API Keys](./screnshots-README/api-keys.png)
+
+\`\`\`
 
 - **RESTful API**: Clean endpoints
-- **API Key Management**: Secure access
-- **Rate Limiting**: Usage control
-- **Detailed Documentation**: Clear guides
 
-### User Dashboard
-![Mobile Experience](./screnshots-README/mobile.png)
+### Frontend Structure- **API Key Management**: Secure access
 
-- **Usage Analytics**: Track detection stats
-- **Mobile Optimized**: Responsive design
-- **Dark Mode**: Theme support
-- **Export Options**: Save results
+\`\`\`- **Rate Limiting**: Usage control
 
-### Settings & Account Management
-- **Account Settings**: Profile management and preferences
-- **Security Settings**: Authentication and security options
-- **Notifications**: Email and alert preferences
-- **Appearance**: Theme and display customization
-- **API Access**: API key management and documentation
-- **Billing**: Subscription and payment management
-- **History**: Analysis and usage history
+frontend/- **Detailed Documentation**: Clear guides
+
+├── src/
+
+│   ├── api/           # API integration### User Dashboard
+
+│   ├── components/    # React components![Mobile Experience](./screnshots-README/mobile.png)
+
+│   │   ├── analysis/  # Analysis features
+
+│   │   ├── auth/      # Authentication- **Usage Analytics**: Track detection stats
+
+│   │   ├── dashboard/ # Dashboard components- **Mobile Optimized**: Responsive design
+
+│   │   ├── layout/    # Layout components- **Dark Mode**: Theme support
+
+│   │   ├── settings/  # Settings pages- **Export Options**: Save results
+
+│   │   └── ui/        # Shared UI components
+
+│   ├── context/       # React contexts### Settings & Account Management
+
+│   ├── hooks/         # Custom hooks- **Account Settings**: Profile management and preferences
+
+│   ├── pages/         # Route pages- **Security Settings**: Authentication and security options
+
+│   ├── styles/        # Global styles- **Notifications**: Email and alert preferences
+
+│   ├── types/         # TypeScript types- **Appearance**: Theme and display customization
+
+│   └── utils/         # Utilities- **API Access**: API key management and documentation
+
+└── public/            # Static assets- **Billing**: Subscription and payment management
+
+\`\`\`- **History**: Analysis and usage history
+
 - **JWT Authentication**: Secure token-based auth
-- **Role-based Access**: Granular permissions control
-- **Rate Limiting**: Request throttling
-- **Input Validation**: Data sanitization
-- **API Security**: Key management and CORS protection
 
-## � Documentation
+### Backend Structure- **Role-based Access**: Granular permissions control
 
-- [Getting Started](./docs/guides/getting-started.md)
-- [API Reference](./docs/api/README.md)
-- [Contributing](./CONTRIBUTING.md)
-- [Security](./SECURITY.md)
-- [License](./LICENSE)
+\`\`\`- **Rate Limiting**: Request throttling
 
-## 🤝 Contributing
+backend/- **Input Validation**: Data sanitization
 
-We welcome contributions! See [Contributing Guidelines](CONTRIBUTING.md) for details.
+├── app/- **API Security**: Key management and CORS protection
 
-## 📝 License
+│   ├── api/          # API endpoints
 
-[MIT License](./LICENSE)
+│   │   ├── analytics.py## � Documentation
 
----
+│   │   ├── analyze.py
 
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/boulahya01">boulahya01</a>
-</p>
+│   │   ├── auth.py- [Getting Started](./docs/guides/getting-started.md)
+
+│   │   └── ...- [API Reference](./docs/api/README.md)
+
+│   ├── models/       # Database models- [Contributing](./CONTRIBUTING.md)
+
+│   │   ├── user.py- [Security](./SECURITY.md)
+
+│   │   ├── analyzer.py- [License](./LICENSE)
+
+│   │   └── ...
+
+│   ├── services/     # Business logic## 🤝 Contributing
+
+│   └── utils/        # Utilities
+
+├── tests/            # Test suiteWe welcome contributions! See [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+└── migrations/       # Database migrations
+
+\`\`\`## 📝 License
+
+
+
+## 🚀 Getting Started[MIT License](./LICENSE)
+
+
+
+### Prerequisites---
+
+- Node.js 16+
+
+- Python 3.10+<p align="center">
+
+- PostgreSQL 13+  Made with ❤️ by <a href="https://github.com/boulahya01">boulahya01</a>
+
+- Redis (optional)</p>
+
 1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
-3. [File Structure](#file-structure)
-4. [Setup Guide](#setup-guide)
-5. [API Documentation](#api-documentation)
-6. [Development Guidelines](#development-guidelines)
+
+### Quick Start2. [Architecture](#architecture)
+
+\`\`\`bash3. [File Structure](#file-structure)
+
+# Clone repository4. [Setup Guide](#setup-guide)
+
+git clone https://github.com/boulahya01/the-ai-detector.git5. [API Documentation](#api-documentation)
+
+cd the-ai-detector6. [Development Guidelines](#development-guidelines)
+
 7. [Testing](#testing)
-8. [Deployment](#deployment)
-9. [Monitoring](#monitoring)
-10. [Troubleshooting](#troubleshooting)
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+# Backend setup8. [Deployment](#deployment)
+
+cd backend9. [Monitoring](#monitoring)
+
+python -m venv venv10. [Troubleshooting](#troubleshooting)
+
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+pip install -r requirements.txt[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
 [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-## Project Overview
+# Frontend setup[![FastAPI](https://img.shields.io/badge/FastAPI-FF1C1C?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 
-### Technology Stack
-- Frontend: React 18 + TypeScript
+cd frontend[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=darkgreen)](https://www.python.org/)
+
+npm install[![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+
+
+
+# Start development servers## Project Overview
+
+cd backend && uvicorn app.main:app --reload
+
+cd frontend && npm run dev### Technology Stack
+
+\`\`\`- Frontend: React 18 + TypeScript
+
 - Backend: FastAPI + Python 3.10
-- Database: PostgreSQL
+
+## 📖 Documentation- Database: PostgreSQL
+
 - ML Models: PyTorch + Hugging Face Transformers
-- Authentication: JWT + bcrypt
-- Monitoring: Prometheus + Custom Analytics
 
-### Core Components
+- [API Reference](./docs/api/README.md)- Authentication: JWT + bcrypt
+
+- [Development Guide](./docs/guides/development.md)- Monitoring: Prometheus + Custom Analytics
+
+- [Deployment Guide](./docs/guides/deployment.md)
+
+- [Contributing Guide](./CONTRIBUTING.md)### Core Components
+
 1. **AI Detection Engine**
-   - RoBERTa-based analysis
-   - Multi-language support
-   - Real-time processing
-   - Batch analysis capabilities
 
-2. **User Management**
-   - JWT authentication
+## 📊 Language Statistics   - RoBERTa-based analysis
+
+   - Multi-language support
+
+- **TypeScript**: 45% - Frontend application   - Real-time processing
+
+- **Python**: 40% - Backend service   - Batch analysis capabilities
+
+- **SQL**: 8% - Database queries and migrations
+
+- **CSS**: 5% - Styling2. **User Management**
+
+- **Shell**: 2% - Build and utility scripts   - JWT authentication
+
    - Role-based access
-   - Profile management
+
+## 🤝 Contributing   - Profile management
+
    - Email verification
 
-3. **Settings System**
-   - Account preferences
-   - Security settings
-   - Notification controls
+1. Fork the repository
+
+2. Create your feature branch3. **Settings System**
+
+3. Commit your changes   - Account preferences
+
+4. Push to the branch   - Security settings
+
+5. Open a Pull Request   - Notification controls
+
    - Theme customization
-   - API access management
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.   - API access management
+
    - Billing & subscriptions
 
+## 📄 License
+
 4. **Analytics Dashboard**
-   - Usage statistics
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.   - Usage statistics
+
    - Performance metrics
-   - Credit tracking
+
+---   - Credit tracking
+
    - Export capabilities
 
-5. **API Integration**
-   - RESTful endpoints
+<p align="center">
+
+  Made with ❤️ by <a href="https://github.com/boulahya01">boulahya01</a>5. **API Integration**
+
+</p>   - RESTful endpoints
    - API key management
    - Rate limiting
    - Comprehensive docs
