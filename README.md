@@ -161,14 +161,19 @@ Visit `http://localhost:5173` to start using the application.
 - **Dark Mode**: Theme support
 - **Export Options**: Save results
 
-## 🔒 Security
-
-- JWT authentication
-- Role-based access control
-- Rate limiting
-- Input validation
-- API key security
-- CORS protection
+### Settings & Account Management
+- **Account Settings**: Profile management and preferences
+- **Security Settings**: Authentication and security options
+- **Notifications**: Email and alert preferences
+- **Appearance**: Theme and display customization
+- **API Access**: API key management and documentation
+- **Billing**: Subscription and payment management
+- **History**: Analysis and usage history
+- **JWT Authentication**: Secure token-based auth
+- **Role-based Access**: Granular permissions control
+- **Rate Limiting**: Request throttling
+- **Input Validation**: Data sanitization
+- **API Security**: Key management and CORS protection
 
 ## � Documentation
 
@@ -219,11 +224,37 @@ We welcome contributions! See [Contributing Guidelines](CONTRIBUTING.md) for det
 - Monitoring: Prometheus + Custom Analytics
 
 ### Core Components
-1. AI Detection Engine
-2. User Authentication System
-3. Analytics Dashboard
-4. API Integration Layer
-5. Monitoring System
+1. **AI Detection Engine**
+   - RoBERTa-based analysis
+   - Multi-language support
+   - Real-time processing
+   - Batch analysis capabilities
+
+2. **User Management**
+   - JWT authentication
+   - Role-based access
+   - Profile management
+   - Email verification
+
+3. **Settings System**
+   - Account preferences
+   - Security settings
+   - Notification controls
+   - Theme customization
+   - API access management
+   - Billing & subscriptions
+
+4. **Analytics Dashboard**
+   - Usage statistics
+   - Performance metrics
+   - Credit tracking
+   - Export capabilities
+
+5. **API Integration**
+   - RESTful endpoints
+   - API key management
+   - Rate limiting
+   - Comprehensive docs
 
 ## Screenshots
 
@@ -333,19 +364,31 @@ backend/
 └── migrations/              # Database migrations
     └── versions/
 
-### UI Components & Styling
+### UI Components & Features
 
-#### Dark Mode Interface
-![Dark Mode](./screnshots-README/dark-mode.png)
-*Sophisticated dark theme with accent colors*
+#### Account Management
+![Settings](./screnshots-README/settings-page.png)
+*Comprehensive settings interface with modular sections*
 
-#### Component Library
-![Components](./screnshots-README/components.png)
-*Custom component library with consistent styling*
+#### Documentation & API Access
+![Documentation](./screnshots-README/documentation.png)
+*API documentation and integration guides*
 
-#### Responsive Design
-![Responsive](./screnshots-README/responsive.png)
-*Fully responsive layout across all devices*
+#### Content Analysis
+![Analysis](./screnshots-README/Analyse-and-result.png)
+*Advanced content analysis with detailed results*
+
+#### Results Explanation
+![Explain Results](./screnshots-README/EXPLAIN-RESULT.png)
+*Detailed analysis explanation and confidence metrics*
+
+#### User Profile
+![Profile](./screnshots-README/profile-page.png)
+*Personalized user profile and preferences*
+
+#### Mobile Experience
+![Mobile](./screnshots-README/mobile.png)
+*Fully responsive mobile-first design*
 
 ### Frontend Structure
 ```
@@ -354,7 +397,8 @@ frontend/
 │   ├── api/                 # API integration
 │   │   ├── analytics.ts
 │   │   ├── auth.ts
-│   │   └── analysis.ts
+│   │   ├── analysis.ts
+│   │   └── shobeis.ts      # Credits system
 │   │
 │   ├── components/
 │   │   ├── analytics/      # Analytics components
@@ -367,18 +411,28 @@ frontend/
 │   │   │   └── RadialChart.tsx
 │   │   │
 │   │   ├── features/      # Feature components
-│   │   │   ├── analysis/
-│   │   │   ├── auth/
-│   │   │   └── subscription/
+│   │   │   ├── analysis/  # Analysis features
+│   │   │   ├── auth/      # Authentication
+│   │   │   └── subscription/ # Billing
 │   │   │
 │   │   ├── layout/        # Layout components
-│   │   │   ├── Header.tsx
+│   │   │   ├── Header.tsx # Main navigation
 │   │   │   └── Footer.tsx
 │   │   │
-│   │   └── ui/           # UI components
-│   │       ├── Button.tsx
-│   │       ├── Input.tsx
-│   │       └── Card.tsx
+│   │   ├── settings/      # Settings pages
+│   │   │   ├── AccountSettings.tsx
+│   │   │   ├── SecuritySettings.tsx
+│   │   │   ├── NotificationsSettings.tsx
+│   │   │   ├── AppearanceSettings.tsx
+│   │   │   ├── ApiAccessSettings.tsx
+│   │   │   ├── BillingSettings.tsx
+│   │   │   └── BillingHistory.tsx
+│   │   │
+│   │   └── ui/           # Core UI components
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── tabs.tsx
+│   │       └── toast.tsx
 │   │
 │   ├── context/          # React contexts
 │   │   ├── AuthContext.tsx
