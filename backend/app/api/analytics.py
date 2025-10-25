@@ -214,7 +214,9 @@ async def get_usage_stats(
                         for usage in api_stats
                     ],
                     "timeline": analytics_service.get_analytics_trend(timeframe)
-                }        return {"error": "No statistics available"}
+                }
+            else:
+                return {"error": "No statistics available"}
     except Exception as e:
         logger.error(f"Error fetching usage stats: {str(e)}", exc_info=True)
         raise HTTPException(

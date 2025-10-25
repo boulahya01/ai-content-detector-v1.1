@@ -44,7 +44,7 @@ export default function HomePage(): JSX.Element {
 
   const onAnalyze = React.useCallback(() => {
     if (!text.trim()) return;
-    navigate('/analyze', { state: { text } });
+    navigate('/analysis', { state: { text } });
   }, [navigate, text]);
   return (
     <PageLayout title="AI Content Detector" description="Quickly check whether text was produced by AI" wide center>

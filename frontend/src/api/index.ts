@@ -1,0 +1,1 @@
+export { shobeisService as shobeisApi } from './shobeis';

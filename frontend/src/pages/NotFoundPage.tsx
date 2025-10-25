@@ -18,7 +18,7 @@ export default function NotFoundPage() {
             Go Home
           </Link>
           <Link
-            to="/analyze"
+            to="/analysis"
             className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-indigo-600 text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 transition-colors duration-200"
           >
             Try Analysis

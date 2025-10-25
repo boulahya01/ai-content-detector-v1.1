@@ -17,7 +17,19 @@ export interface User {
   avatar?: string;
   avatarUrl?: string;
   is_active: boolean;
-  role?: 'user' | 'admin';
+  role: 'user' | 'admin';
+  emailVerified: boolean;
+  company?: string;
+  website?: string;
+  subscription?: {
+    plan: 'free' | 'basic' | 'premium' | 'pro';
+    status: 'active' | 'canceled' | 'expired' | 'past_due';
+    currentPeriodEnd: string;
+    usage?: {
+      current: number;
+      limit: number;
+    };
+  };
 }
 
 export interface AuthResponse {
@@ -50,6 +62,7 @@ export interface AnalysisProgress {
 export interface AnalysisResult {
   id: string;
   contentPreview: string;
+  text?: string;
   authenticityScore: number;
   confidenceLevel: 'high' | 'medium' | 'low';
   analysisDetails: {
@@ -63,16 +76,18 @@ export interface AnalysisResult {
   };
   createdAt: string;
   fileName?: string;
+  language?: string;
 }
 
 // Subscription Types
 export interface Subscription {
   id: string;
   userId: string;
-  plan: 'free' | 'basic' | 'premium';
-  status: 'active' | 'canceled' | 'expired';
+  plan: 'free' | 'basic' | 'premium' | 'pro';
+  status: 'active' | 'canceled' | 'expired' | 'past_due';
   startDate: string;
   endDate: string;
+  currentPeriodEnd: string;
   features: string[];
   usage: {
     current: number;

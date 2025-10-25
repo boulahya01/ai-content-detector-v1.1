@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
@@ -196,19 +196,28 @@ class AnalyticsService:
         user_count = self.session.query(func.count(User.id)).scalar() or 0
 
         # Analysis aggregates
-        analysis_stats = self.session.query(
-            func.sum(UserAnalysisStats.total_analyses),
-            func.sum(UserAnalysisStats.ai_detected_count),
-            func.avg(UserAnalysisStats.avg_confidence),
-            func.sum(UserAnalysisStats.total_credits_used),
-            func.sum(UserAnalysisStats.total_content_length)
-        ).one()
+        try:
+            analysis_stats = self.session.query(
+                func.sum(UserAnalysisStats.total_analyses),
+                func.sum(UserAnalysisStats.ai_detected_count),
+                func.avg(UserAnalysisStats.avg_confidence),
+                func.sum(UserAnalysisStats.total_credits_used),
+                func.sum(UserAnalysisStats.total_content_length)
+            ).one()
+        except SQLAlchemyError as e:
+            logger.warning(f"Analysis aggregates query failed: {e}")
+            # Fallback to zeros when the analytics table/columns are missing or migration not applied
+            analysis_stats = (0, 0, 0.0, 0, 0)
 
-        api_stats = self.session.query(
-            func.sum(UserApiUsage.request_count),
-            func.sum(UserApiUsage.success_count),
-            func.avg(UserApiUsage.avg_response_time)
-        ).one()
+        try:
+            api_stats = self.session.query(
+                func.sum(UserApiUsage.request_count),
+                func.sum(UserApiUsage.success_count),
+                func.avg(UserApiUsage.avg_response_time)
+            ).one()
+        except SQLAlchemyError as e:
+            logger.warning(f"API aggregates query failed: {e}")
+            api_stats = (0, 0, 0.0)
 
         analytics = {
             "users": {

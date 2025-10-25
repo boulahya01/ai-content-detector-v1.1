@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Switch } from '@/components/ui/Switch';
+import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 import { Loader2 } from 'lucide-react';
-import { notificationService, type NotificationPreferences } from '@/services/notifications';
+import { notificationService } from '@/services/notifications';
 
-interface NotificationPreferences {
+export interface NotificationPreferences {
   email: {
     analysisResults: boolean;
     accountActivity: boolean;

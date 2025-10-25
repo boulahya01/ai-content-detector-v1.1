@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import './index.css';
+import './styles/index.css';
 
 // Error boundary for development
 if (process.env.NODE_ENV === 'development') {

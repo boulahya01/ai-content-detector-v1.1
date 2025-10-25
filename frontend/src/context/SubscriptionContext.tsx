@@ -66,7 +66,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       value={{
         subscription,
         isLoading,
-        
+        usage: subscription?.usage?.current || 0,
         updateSubscription,
         cancelSubscription,
       }}

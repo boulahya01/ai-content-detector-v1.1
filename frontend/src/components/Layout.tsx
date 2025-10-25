@@ -191,7 +191,6 @@ export function Layout() {
           </button>
         </div>
         </div>
-      </div>
 
       {/* Mobile Menu Dialog */}
       <MobileMenu

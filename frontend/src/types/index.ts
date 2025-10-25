@@ -1,31 +1,7 @@
 // Re-export all types
 export * from './api';
 
-// User Types
-export type User = {
-  id: string;
-  email: string;
-  name: string;
-  avatarUrl?: string;
-  credits: number;
-  createdAt: string;
-  emailVerified: boolean;
-  role: 'user' | 'admin';
-  lastLoginAt: string;
-};
-
-// Subscription and Plan Types
-export type Subscription = {
-  id: string;
-  planType: 'basic' | 'pro';
-  billingCycle: 'monthly' | 'yearly';
-  status: 'active' | 'canceled' | 'past_due';
-  currentPeriodEnd: string;
-  analysisLimit: number;
-  features: string[];
-};
-
-export type Plan = {
+export interface Plan {
   id: string;
   name: string;
   description: string;
@@ -34,24 +10,14 @@ export type Plan = {
   features: string[];
   analysisLimit: number;
   isPopular?: boolean;
-};
+  billingCycle?: 'monthly' | 'yearly';
+}
 
-// Analysis Types
-export type AnalysisResult = {
-  id: string;
-  contentPreview: string;
-  authenticityScore: number;
-  confidenceLevel: 'high' | 'medium' | 'low';
-  analysisDetails: Record<string, any>;
-  createdAt: string;
-  fileName?: string;
-};
-
-export type UsageStats = {
+export interface UsageStats {
   analysesCount: number;
   monthYear: string;
   limit: number;
-};
+}
 
 // Context Types
 export interface AuthContextType {

@@ -1,4 +1,5 @@
 import { useAnalytics } from '@/context/AnalyticsContext';
+import { Button } from '@/components/ui/Button';
 
 function convertToCSV(objArray: any[]) {
   const array = typeof objArray !== 'object' ? JSON.parse(objArray) : objArray;
@@ -51,12 +52,13 @@ export default function ExportAnalyticsButton() {
   };
 
   return (
-    <button
-      className="mt-4 px-4 py-2 bg-accent-3 text-white rounded shadow hover:bg-accent-2 transition-colors"
+    <Button
+      variant="secondary"
       onClick={handleExport}
       disabled={!userAnalytics}
+      className="mt-4"
     >
       Export Analytics (CSV)
-    </button>
+    </Button>
   );
 }

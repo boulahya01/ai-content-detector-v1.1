@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalysis } from '@/context/AnalysisContext';
-import RadialChart from '@/components/charts/RadialChart';
-import IndicatorCard from '@/components/IndicatorCard';
 import ResultCard from '@/components/ResultCard';
-import { FiFileText, FiUpload, FiCopy, FiDownload } from 'react-icons/fi';
+import { FiUpload, FiCopy } from 'react-icons/fi';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-import { analysisService } from '@/api/analysis';
 
 interface AnalysisResult {
   id: string;
@@ -33,6 +29,9 @@ export default function AnalysisPage() {
   const [showDetails, setShowDetails] = useState(false);
 
   const isPro = user?.role === 'pro';
+  // Anonymous usage limits
+  const ANON_MAX_PER_HOUR = 5;
+  const ANON_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
   const handleAnalyze = async () => {
     if (!text.trim() && analysisMode === 'single') {
@@ -49,6 +48,25 @@ export default function AnalysisPage() {
     if (analysisMode === 'single' && text.length > 2000) {
       toast.error('Text must be 2000 characters or fewer for test analysis.');
       return;
+    }
+
+    // Enforce anonymous rate limits (client-side, best-effort)
+    if (!user) {
+      try {
+        const raw = sessionStorage.getItem('anon_analysis') || '[]';
+        const timestamps: number[] = JSON.parse(raw);
+        const cutoff = Date.now() - ANON_WINDOW_MS;
+        const recent = timestamps.filter((t) => t > cutoff);
+        if (recent.length >= ANON_MAX_PER_HOUR) {
+          toast.error(`Anonymous analysis limit reached (${ANON_MAX_PER_HOUR} per hour). Please log in to continue.`);
+          return;
+        }
+        // record this attempt (will be confirmed after success)
+        recent.push(Date.now());
+        sessionStorage.setItem('anon_analysis', JSON.stringify(recent));
+      } catch (e) {
+        // ignore storage errors
+      }
     }
 
     setIsLoading(true);
@@ -168,6 +186,11 @@ export default function AnalysisPage() {
           </div>
         )}
       </div>
+      {!user && (
+        <div className="mb-4 p-3 rounded-md bg-yellow-900/20 border border-yellow-800 text-yellow-200">
+          <strong>Try it without signing in:</strong> You can analyze short texts here (max 2,000 characters) up to 5 times per hour. Create an account to unlock higher limits and bulk analysis.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
         {/* Left Column - Input */}

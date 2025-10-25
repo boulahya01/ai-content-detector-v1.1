@@ -105,4 +105,26 @@ Contact notes
 -------------
 - This file is intended to be a living document. Update it with any new fix you rely on while applying UI changes.
 
+UI / Import casing and component rules
+------------------------------------
+When working in this repo please follow these rules to avoid the common TypeScript import errors caused by file-name casing and duplicate components:
+
+- Canonical components live under `frontend/src/components/ui/` with PascalCase filenames (for example `Button.tsx`, `Card.tsx`, `Toast.tsx`).
+- Some parts of the codebase still import lowercase paths (for example `@/components/ui/button` or `../../ui/card`) — to reduce churn we provide small lowercase wrappers (re-exports) that forward to the canonical PascalCase files. If you rename or move a canonical file, update or remove the wrapper first.
+- Do NOT create multiple implementations of the same component. If you need to change the component API, update the canonical file (`Button.tsx`) and then update usages across the app.
+- If you see TypeScript errors like `Cannot find module '@/components/ui/button'`, check whether a lowercase wrapper exists and create one like `export { Button } from './Button'` to bridge imports while refactoring.
+
+To remove duplicates safely:
+
+1. Search the repo for duplicate component files (e.g. `Button.tsx` vs `button.tsx`).
+  - If the duplicates are simple wrappers, prefer keeping one canonical implementation and remove the wrapper only after changing imports across the project.
+2. If you must remove a wrapper file, update all imports first (use `rg "components/ui/button" -n` or your IDE's global rename). Then delete the file and run `npm run typecheck`.
+
+To help with the current refactor we added lowercase wrappers for `button` and `card` that re-export the canonical PascalCase components. After finishing a larger refactor you can remove these wrappers once all imports point to the canonical files.
+
+Toast & notification notes
+--------------------------
+- The project uses a Radix-based toast implementation under `frontend/src/components/ui/toast.tsx` combined with a small in-memory toaster (`use-toast.tsx`) and a rendered `Toaster` provider component. When you change toast API make sure to update both the UI component (`toast.tsx`) and the state/bridge (`use-toast.tsx`).
+- Avoid mixing multiple toast libraries. If you replace the implementation (for example switching back to 'sonner'), remove the Radix components and update the wrapper usage across the app.
+
 -- End of Rules.md

@@ -53,7 +53,7 @@ class UserCreate(BaseModel):
             raise ValueError('Password must contain at least one number')
         if not any(c for c in v if not c.isalnum()):
             raise ValueError('Password must contain at least one special character')
-        return v
+        return 
 
 class UserResponse(BaseModel):
     id: str

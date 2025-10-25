@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
+import { toast } from '../../ui/use-toast';
 
 export interface AccountSettingsProps {
   className?: string;
@@ -56,7 +57,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ className }) =
             <h3 className="text-lg font-medium text-gray-900">Account Status</h3>
             <p className="mt-1 text-sm text-gray-500">
               Your account was created on {' '}
-              {new Date(user?.createdAt || Date.now()).toLocaleDateString()}
+              {new Date(user?.created_at || Date.now()).toLocaleDateString()}
             </p>
           </div>
 
@@ -85,9 +86,16 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ className }) =
                   // Show QR code in modal
                   // For now we'll just save the secret
                   localStorage.setItem('2fa_secret', secret);
-                  toast.success('2FA setup completed');
+                  toast({
+                    title: "Success",
+                    description: "2FA setup completed"
+                  });
                 } catch (error) {
-                  toast.error('Failed to setup 2FA');
+                  toast({
+                    title: "Error",
+                    description: "Failed to setup 2FA",
+                    variant: "destructive"
+                  });
                 }
               }}
             >

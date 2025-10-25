@@ -131,25 +131,25 @@ export function Header() {
               </DropdownMenuLabel>
               <div className="p-1">
                 <DropdownMenuItem asChild>
-                  <Link to="/account" className="flex items-center group cursor-pointer">
+                  <Link to="/settings/account/profile" className="flex items-center group cursor-pointer">
                     <FiUser className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-                    Account
+                    Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/account/settings" className="flex items-center group cursor-pointer">
+                  <Link to="/settings/account-settings" className="flex items-center group cursor-pointer">
                     <FiSettings className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                     Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/account/api" className="flex items-center group cursor-pointer">
+                  <Link to="/settings/api-access/keys" className="flex items-center group cursor-pointer">
                     <FiKey className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                     API Access
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/account/billing" className="flex items-center group cursor-pointer">
+                  <Link to="/settings/billing/overview" className="flex items-center group cursor-pointer">
                     <FiCreditCard className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                     Billing & Credits
                   </Link>

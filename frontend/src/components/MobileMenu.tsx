@@ -2,22 +2,37 @@ import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/utils/cn';
+import { User } from '@/types/user';
+
+interface NavigationItem {
+  name: string;
+  href: string;
+  description?: string;
+  icon?: string;
+  requiresAuth?: boolean;
+}
+
+interface NavigationStructure {
+  public: NavigationItem[];
+  private: NavigationItem[];
+  userMenu: NavigationItem[];
+  footer: {
+    forEveryone: NavigationItem[];
+    advanced: NavigationItem[];
+    userFeatures: NavigationItem[];
+    resources: NavigationItem[];
+    product?: NavigationItem[];
+    company?: NavigationItem[];
+    legal?: NavigationItem[];
+    social?: NavigationItem[];
+  };
+}
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  navigation: {
-    public: Array<{ name: string; href: string; }>;
-    private: Array<{ name: string; href: string; }>;
-    userMenu: Array<{ name: string; href: string; }>;
-    footer: {
-      forEveryone: Array<{ name: string; href: string; }>;
-      advanced: Array<{ name: string; href: string; requiresAuth?: boolean; }>;
-      userFeatures: Array<{ name: string; href: string; requiresAuth?: boolean; }>;
-      resources: Array<{ name: string; href: string; requiresAuth?: boolean; }>;
-    };
-  };
-  user: any | null;
+  navigation: NavigationStructure;
+  user: User | null;
 }
 
 export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProps) {
@@ -121,7 +136,7 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
                           </h3>
                           <div className="space-y-1">
                             <Link
-                              to="/account/profile"
+                              to="/settings/account/profile"
                               onClick={onClose}
                               className="flex items-center px-4 py-3 text-base font-medium text-white/80 hover:text-accent-500 hover:bg-white/5 rounded-lg transition-colors"
                             >
@@ -131,7 +146,7 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
                               Profile
                             </Link>
                             <Link
-                              to="/account/billing"
+                              to="/settings/billing/overview"
                               onClick={onClose}
                               className="flex items-center px-4 py-3 text-base font-medium text-white/80 hover:text-accent-500 hover:bg-white/5 rounded-lg transition-colors"
                             >
@@ -141,7 +156,7 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
                               Billing
                             </Link>
                             <Link
-                              to="/account/api-keys"
+                              to="/settings/api-access/keys"
                               onClick={onClose}
                               className="flex items-center px-4 py-3 text-base font-medium text-white/80 hover:text-accent-500 hover:bg-white/5 rounded-lg transition-colors"
                             >
@@ -151,15 +166,15 @@ export function MobileMenu({ isOpen, onClose, navigation, user }: MobileMenuProp
                               API Keys
                             </Link>
                             <Link
-                              to="/account/settings"
+                              to="/settings/account-settings"
                               onClick={onClose}
-                              className="flex items-center px-4 py-3 text-base font-medium text-white/80 hover:text-accent-500 hover:bg-white/5 rounded-lg transition-colors"
+                              className="flex items-center px-4 py-3 text-base font-medium text-white/80 hover:text-accent-500 hover:bg-white/5 rounded-lg transition-colors group"
                             >
-                              <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <svg className="w-5 h-5 mr-3 transition-colors group-hover:stroke-accent-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
-                              Settings
+                              <span className="transition-colors group-hover:text-accent-500">Settings</span>
                             </Link>
                           </div>
                         </div>

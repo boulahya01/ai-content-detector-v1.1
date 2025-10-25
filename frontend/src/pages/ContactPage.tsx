@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+import { toast } from 'sonner';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -24,21 +25,23 @@ export default function ContactPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         toast.success('Message sent successfully!');
-        setName('');
-        setEmail('');
-        setMessage('');
+        setIsSuccess(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
       } else {
-        throw new Error('Failed to send message');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setIsSuccess(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
+        const payload = await response.json().catch(() => ({}));
+        const msg = payload?.message || 'Failed to send message';
+        toast.error(msg);
+      }
+      // small delay for UX
+      await new Promise((resolve) => setTimeout(resolve, 400));
     } catch (error) {
       console.error('Failed to send message:', error);
+      toast.error('Failed to send message');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,5 +1,14 @@
 import api from '../lib/api';
 
+// Export shobeisApi for compatibility with existing code
+export const shobeisApi = {
+  getBalance,
+  charge,
+  estimateCost,
+  getTransactions,
+  purchase,
+};
+
 export interface ShobeisBalance {
   balance: number;
   bonus: number;

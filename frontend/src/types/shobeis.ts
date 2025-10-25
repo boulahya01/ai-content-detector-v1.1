@@ -13,7 +13,7 @@ export const TransactionSchema = z.object({
   created_at: z.string(),
   is_refunded: z.boolean(),
   refund_reason: z.string().optional(),
-  meta: z.record(z.any()).optional(),
+  meta: z.record(z.string(), z.any()).optional(),
 });
 
 export const BalanceSchema = z.object({
